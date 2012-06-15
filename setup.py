@@ -10,14 +10,14 @@ README = read('README.rst')
 
 setup(
     name = 'django-elfinder',
-    version = '0.2',
+    version = '0.2-fsdriver',
     description = 'Django connector for elFinder 2',
     long_description = README,
-    author = 'Mike Ryan',
-    author_email = 'mike@fadedink.co.uk',
-    url = 'https://github.com/mikery/django-elfinder/',
-    download_url = 'https://github.com/mikery/django-elfinder/tarball/v0.2',
-    packages = find_packages(),
+    author = 'Martin Bohacek',
+    author_email = 'bohacekm@gmail.com',
+    url = 'https://github.com/bohyn/django-elfinder/',
+    download_url = 'https://github.com/bohyn/django-elfinder/tarball/v0.2-fsdriver',
+    packages = ['elfinder', 'elfinder.volume_drivers'],
     include_package_data=True,
     requires = ['django (>=1.3)', 'mptt (>=0.5.2)'],
 )

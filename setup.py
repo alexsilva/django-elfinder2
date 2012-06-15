@@ -2,6 +2,7 @@
 
 import os
 from distutils.command.build import build
+from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
 from setuptools import setup, find_packages
 from subprocess import check_call
@@ -29,9 +30,15 @@ class egg_info_with_submodules(egg_info):
         git_checkout_submodules()
         egg_info.run(self)
 
+
+class develop_with_submodules(develop):
+    def run(self):
+        git_checkout_submodules()
+        develop.run(self)
+
         
 setup(
-    cmdclass={"build": build_with_submodules, "egg_info": egg_info_with_submodules},
+    cmdclass={"build": build_with_submodules, "develop": develop_with_submodules}, # "egg_info": egg_info_with_submodules},
     name = 'django-elfinder',
     version = '0.3-ext',
     description = 'Django connector for elFinder 2 - with support for FS storage and TinyMCE connector',

@@ -1,4 +1,4 @@
-dango-elfinder - Django connector for elFinder
+django-elfinder - Django connector for elFinder
 ==============================================
 
 django-elfinder provides a Django-based connector for `elFinder`_, a

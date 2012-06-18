@@ -287,6 +287,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         return FileWrapper.mkfile(new_abs_path, self.root).get_info()
 
     def rename(self, name, target):
+        """ Renames a file or directory. """
         obj = self._get_path_object(self._find_path(target))
         obj.rename(name)
         return {
@@ -295,15 +296,35 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         }
 
     def list(self, target):
+        """ Returns a list of files/directories in the target directory. """
         dir_list = []
         for item in self.get_tree(target):
             dir_list.append(item['name'])
         return dir_list
 
     def paste(self, targets, source, dest, cut):
-        pass  # TODO
+        """ Moves/copies target files/directories from source to dest. """
+        # source_dir = self._get_path_object(source)
+        dest_dir = self._get_path_object(self._find_path(dest))
+        added = []
+        removed = []
+        if dest_dir.is_dir():
+            for target in targets:
+                orig_abs_path = self._find_path(target)
+                new_abs_path = safe_join(self.root, dest_dir.get_path(), os.path.basename(orig_abs_path))
+                if cut:
+                    _fnc = shutil.move
+                    removed.append(self._get_path_info(orig_abs_path)['hash'])
+                else:
+                    _fnc = shutil.copy
+                _fnc(orig_abs_path, new_abs_path)
+                added.append(self._get_path_info(new_abs_path))
+
+        return {"added": added,
+                "removed": removed}
 
     def remove(self, target):
+        """ Delete a file or firectory recursively. """
         obj = self._get_path_object(self._find_path(target))
         obj.remove()
         return target
@@ -325,6 +346,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
     # private methods
 
     def _find_path(self, fhash, root=None, resolution=False):
+        """ Internal method for getting absolute FS path by hash. """
         if root is None:
             root = u'%s' % self.root
         final_path = None
@@ -373,10 +395,12 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         return final_path
 
     def _get_path_object(self, path):
+        """ Internal method for getting FileWrapper/DirectoryWrapper instance by path. """
         if os.path.isdir(path):
             return DirectoryWrapper(path, root=self.root)
         else:
             return FileWrapper(path, root=self.root)
 
     def _get_path_info(self, path):
+        """ Internal method for getting metadata of file/directory by path. """
         return self._get_path_object(path).get_info()

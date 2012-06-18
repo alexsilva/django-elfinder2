@@ -110,7 +110,7 @@
     <script type="text/javascript" charset="utf-8">
         $().ready(function() {
             elfinderOpts = jQuery.extend({
-                url : '{% if coll_id %}{% url elfinder_connector coll_id %}{% else %}{% url elfinder_connector %}{% endif %}',
+                url : '{% if coll_id %}{% url 'elfinder_connector' coll_id %}{% else %}{% url 'elfinder_connector' %}{% endif %}',
                 places : 'h',
                 rememberLastDir : false,
                 placesFirst : false,

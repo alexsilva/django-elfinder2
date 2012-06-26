@@ -328,12 +328,16 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         if dest_dir.is_dir():
             for target in targets:
                 orig_abs_path = self._find_path(target)
+                orig_obj = self._get_path_object(orig_abs_path)
                 new_abs_path = safe_join(self.root, dest_dir.get_path(), os.path.basename(orig_abs_path))
                 if cut:
                     _fnc = shutil.move
-                    removed.append(self._get_path_info(orig_abs_path)['hash'])
+                    removed.append(orig_obj.get_info()['hash'])
                 else:
-                    _fnc = shutil.copytree
+                    if orig_obj.is_dir():
+                        _fnc = shutil.copytree
+                    else:
+                        _fnc = shutil.copy
                 _fnc(orig_abs_path, new_abs_path)
                 added.append(self._get_path_info(new_abs_path))
 

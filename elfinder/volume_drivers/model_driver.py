@@ -1,8 +1,9 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from elfinder.volume_drivers.base import BaseVolumeDriver
 from elfinder import models
+from elfinder.volume_drivers.base import BaseVolumeDriver
+from elfinder.conf import settings
 import logging
 
 
@@ -10,22 +11,36 @@ logger = logging.getLogger(__name__)
 
 
 class ModelVolumeDriver(BaseVolumeDriver):
-    def __init__(self, collection_id,
+    def __init__(self,
+                 collection_id=None
                  collection_model=models.FileCollection,
                  directory_model=models.Directory,
                  file_model=models.File,
                  *args, **kwargs):
-        if collection_id is None:
-            raise ValueError(u"collection_id must me specified for ModelVolumeDriver")
+
+        # resolve Collection pk as following:
+        # 1) key-word argument 'collection_id'
+        # 2) attribute 'elfinder_collection_id' of request object,if passed as key-word argument
+        # 3) settings value 'ELFINDER_MODEL_DRIVER_COLLECTION_ID'
+        if collection_id is not None:
+            self.collection_id = collection_id
+        elif "request" in kwargs and hasattr(kwargs["request"], "elfinder_collection_id"):
+            self.collection_id = kwargs["request"].elfinder_collection_id
+        else:
+            self.collection_id = settings.ELFINDER_MODEL_DRIVER_COLLECTION_ID
+
         super(ModelVolumeDriver, self).__init__(*args, **kwargs)
         self.collection_model = collection_model
         self.directory_model = directory_model
         self.file_model = file_model
 
-        self.collection = self.collection_model.objects.get(pk=collection_id)
+        if self.collection_id:
+            self.collection = self.collection_model.objects.get(pk=self.collection_id)
+        else:
+            self.collection = self.collection_model.objects.order_by("pk")[0]
 
     def get_volume_id(self):
-        return 'fc%s' % self.collection.id
+        return 'fc%s' % self.collection.pk
 
     def get_info(self, hash):
         return self.get_object(hash).get_info()

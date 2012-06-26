@@ -135,7 +135,9 @@ class FileWrapper(WrapperBase):
         return os.lstat(self.path).st_size
 
     def get_url(self):
-        rel_path = os.path.relpath(self.path, self.root).replace('\\', '/')
+        # relative path is constructed against ELFINDER_FS_DRIVER_ROOT, which should correspond with ELFINDER_FS_DRIVER_URL
+        rel_path = os.path.relpath(self.path, elfinder_settings.ELFINDER_FS_DRIVER_ROOT).replace('\\', '/')
+        # rel_path = os.path.relpath(self.path, self.root).replace('\\', '/')
         return u'%s%s' % (elfinder_settings.ELFINDER_FS_DRIVER_URL, rel_path)
 
     def get_mime(self, path):
@@ -227,9 +229,24 @@ class DirectoryWrapper(WrapperBase):
 
 
 class FileSystemVolumeDriver(BaseVolumeDriver):
-    def __init__(self, fs_driver_root=elfinder_settings.ELFINDER_FS_DRIVER_ROOT,
+    def __init__(self, collection_root=None,
                  *args, **kwargs):
+
+        # resolve Collection pk as following:
+        # 1) key-word argument 'collection_root'
+        # 2) attribute 'elfinder_collection_root' of request object,if passed as key-word argument
+        # 3) settings value 'ELFINDER_FS_DRIVER_ROOT'
+        if collection_root is not None:
+            fs_driver_root = collection_root
+        elif "request" in kwargs and hasattr(kwargs["request"], "elfinder_collection_root"):
+            fs_driver_root = kwargs["request"].elfinder_collection_root
+        else:
+            fs_driver_root = elfinder_settings.ELFINDER_FS_DRIVER_ROOT
+
         self.root = os.path.abspath(fs_driver_root)
+
+        # test, if computed root is inside ELFINDER_FS_DRIVER_ROOT, or at least equal to it
+        safe_join(elfinder_settings.ELFINDER_FS_DRIVER_ROOT, self.root)
 
     def get_volume_id(self):
         # return u"fsvolume"
@@ -316,7 +333,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
                     _fnc = shutil.move
                     removed.append(self._get_path_info(orig_abs_path)['hash'])
                 else:
-                    _fnc = shutil.copy
+                    _fnc = shutil.copytree
                 _fnc(orig_abs_path, new_abs_path)
                 added.append(self._get_path_info(new_abs_path))
 

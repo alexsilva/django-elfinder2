@@ -14,17 +14,16 @@ def index(request, coll_id=None):
         collection.
     """
     # collection = FileCollection.objects.get(pk=coll_id)
-    return render_to_response("elfinder.html",
-                              {'coll_id': coll_id},
-                              RequestContext(request))
+    return render_to_response("elfinder.html", {}, RequestContext(request))
 
 
-def connector_view(request, coll_id=None):
+def connector_view(request):
     """ Handles requests for the elFinder connector.
+
     """
 
     # model_volume = ModelVolumeDriver(coll_id)
-    volume = get_volume_driver()(collection_id=coll_id)
+    volume = get_volume_driver()(request=request)
 
     finder = ElFinderConnector([volume])
     finder.run(request)

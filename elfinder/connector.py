@@ -293,8 +293,6 @@ class ElFinderConnector():
         cut = (self.data['cut'] == '1')
         source_volume = self.get_volume(source)
         dest_volume = self.get_volume(dest)
-        print source_volume
-        print dest_volume
         if source_volume != dest_volume:
             raise Exception('Moving between volumes is not supported.')
         self.response.update(dest_volume.paste(targets, source, dest, cut))

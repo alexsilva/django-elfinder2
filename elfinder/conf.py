@@ -16,6 +16,11 @@ class LazySettings(LazyObject):
             "elfinder.volume_drivers.model_driver.ModelVolumeDriver"
         )
 
+        self.ELFINDER_MODEL_DRIVER_COLLECTION_ID = getattr(
+            user_settings, "ELFINDER_MODEL_DRIVER_COLLECTION_ID",
+            None
+        )
+
         self.ELFINDER_FS_DRIVER_ROOT = getattr(
             user_settings, "ELFINDER_FS_DRIVER_ROOT",
             user_settings.MEDIA_ROOT

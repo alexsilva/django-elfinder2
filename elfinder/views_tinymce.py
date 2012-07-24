@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
 from django.core.exceptions import ImproperlyConfigured
-from django.shortcuts import render
+try:
+    from django.shortcuts import render
+except ImportError:
+    # for compatibility with old Django
+    from django.shortcuts import render_to_response
+    from django.template import RequestContext
+
+    def render(request, *args, **kwargs):
+        content_type = kwargs.pop("content_type", None)
+        if content_type is not None:
+            kwargs["mimetype"] = content_type
+        kwargs["context_instance"] = RequestContext(request)
+        return render_to_response(*args, **kwargs)
 
 from elfinder.conf import settings
 

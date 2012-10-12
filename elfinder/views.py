@@ -1,8 +1,10 @@
 #from django.views.generic import TemplateView
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.utils import simplejson as json
 from django.template import RequestContext
+from elfinder.conf import settings as elfinder_settings
 from elfinder.connector import ElFinderConnector
 from elfinder.models import FileCollection
 # from elfinder.volume_drivers.model_driver import ModelVolumeDriver
@@ -15,6 +17,9 @@ def index(request, coll_id=None):
     """
     # collection = FileCollection.objects.get(pk=coll_id)
     return render_to_response("elfinder.html", {}, RequestContext(request))
+
+if elfinder_settings.ELFINDER_LOGIN_REQUIRED:
+    index = login_required(index)
 
 
 def connector_view(request):
@@ -42,6 +47,9 @@ def connector_view(request):
 
     return response
 
+if elfinder_settings.ELFINDER_LOGIN_REQUIRED:
+    connector_view = login_required(connector_view)
+
 
 def read_file(request, volume, file_hash, template="read_file.html"):
     """ Default view for responding to "open file" requests.
@@ -52,3 +60,6 @@ def read_file(request, volume, file_hash, template="read_file.html"):
     return render_to_response(template,
                               {'file': file_hash},
                               RequestContext(request))
+
+if elfinder_settings.ELFINDER_LOGIN_REQUIRED:
+    read_file = login_required(read_file)

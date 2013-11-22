@@ -127,6 +127,8 @@ class ElFinderConnector():
 
         try:
             func()
+        except UnicodeDecodeError:
+            raise
         except Exception, e:
             self.response['error'] = '%s' % e
             logger.exception(e)

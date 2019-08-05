@@ -1,31 +1,28 @@
-from django.core.exceptions import ObjectDoesNotExist
-from elfinder.models import FileCollection, Directory, File
-import logging
-import traceback
-import sys
-import collections
-import os
-import patoolib
-
-
 """ Connector class for Django/elFinder integration.
 
-    TODO
+TODO
 
-    Permissions checks when viewing/modifying objects - users can currently
-    create files in other people's file collections, or delete files they
-    do not own. This needs to be implemented in an extendable way, rather
-    than being tied to one method of permissions checking.
+Permissions checks when viewing/modifying objects - users can currently
+create files in other people's file collections, or delete files they
+do not own. This needs to be implemented in an extendable way, rather
+than being tied to one method of permissions checking.
 """
 
+import collections
+import logging
+import os
+
+import patoolib
 
 logger = logging.getLogger(__name__)
 
 
-class ElFinderConnector():
+class ElFinderConnector(object):
     _version = '2.0'
 
-    def __init__(self, volumes={}):
+    def __init__(self, volumes=None):
+        if volumes is None:
+            volumes = {}
         self.httpResponse = {}
         self.httpStatusCode = 200
         self.httpHeader = {'Content-type': 'application/json'}
@@ -58,7 +55,6 @@ class ElFinderConnector():
                 'ls': ('__list', {'target': True}),
                 'paste': ('__paste', {'targets[]': True, 'src': True,
                                       'dst': True, 'cut': True}),
-                'rename': ('__rename', {'target': True, 'name': True}),
                 'rm': ('__remove', {'targets[]': True}),
                 'upload': ('__upload', {'target': True}),
                 'extract': ('__extract', {'target': True}),
@@ -112,9 +108,9 @@ class ElFinderConnector():
             of GET vars manually - they can assume that required items exist.
         """
         for field in command_variables:
-            if command_variables[field] == True and field not in self.data:
+            if command_variables[field] is True and field not in self.data:
                 return False
-            elif command_variables[field] == False and field in self.data:
+            elif command_variables[field] is False and field in self.data:
                 return False
         return True
 
@@ -158,10 +154,7 @@ class ElFinderConnector():
         self.request = request
 
         # Is this a POST or a GET?
-        if request.method == 'POST':
-            data_source = request.POST
-        elif request.method == 'GET':
-            data_source = request.GET
+        data_source = getattr(request, request.method)
 
         # Copy allowed parameters from the given request's GET to self.data
         for field in self.get_allowed_http_params():
@@ -323,16 +316,16 @@ class ElFinderConnector():
             "application/x-tar": 'tar',
             "application/zip": 'zip',
         }
+        added = []
+        zipfile = None
         if abs_path:
             zipfile = os.path.join(abs_path, "{}.{}".format(name, type_map[type]))
             files = []
-            added = []
             for trg in targets:
                 orig_abs_path = source_volume._find_path(trg)
                 files.append(orig_abs_path)
 
             patoolib.create_archive(zipfile, files)
-
         for node in source_volume.get_tree(target):
             if source_volume._find_path(node['hash']) == zipfile:
                 added.append(node)

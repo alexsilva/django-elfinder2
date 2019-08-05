@@ -7,7 +7,6 @@ from elfinder.connector import ElFinderConnector
 from elfinder.models import FileCollection
 # from elfinder.volume_drivers.model_driver import ModelVolumeDriver
 from elfinder.volume_drivers import get_volume_driver
-from django.views.decorators.csrf import csrf_exempt
 
 
 def index(request, coll_id=None):
@@ -20,7 +19,6 @@ def index(request, coll_id=None):
                               RequestContext(request))
 
 
-@csrf_exempt
 def connector_view(request, coll_id=None):
     """ Handles requests for the elFinder connector.
     """

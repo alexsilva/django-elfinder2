@@ -19,6 +19,8 @@
 
 	<link rel="stylesheet" href="{% static "elfinder/css/theme.css" %}"       type="text/css" media="screen" charset="utf-8">
 
+    <script src="{% static "elfinder/js.cookie-2.2.0.min.js" %}" type="application/javascript"></script>
+
 	<!-- elfinder core -->
 	<script src="{% static "elfinder/js/elFinder.js" %}"           type="text/javascript" charset="utf-8"></script>
 	<script src="{% static "elfinder/js/elFinder.version.js" %}"   type="text/javascript" charset="utf-8"></script>
@@ -115,7 +117,7 @@
                 rememberLastDir : false,
                 placesFirst : false,
                 requestType: 'post',
-                customData : { csrfmiddlewaretoken : '{{ csrf_token }}',  },
+                customData : { csrfmiddlewaretoken : Cookies.get('csrftoken'),  },
                 uiOptions : { toolbar : [
                                 ['back', 'forward'],
                                 ['download', 'mkdir', 'mkfile', 'upload'],

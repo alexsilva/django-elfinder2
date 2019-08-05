@@ -1,12 +1,11 @@
 from django.db import models
-from django.dispatch import receiver
-from django.db.models.signals import pre_delete
 from mptt.models import MPTTModel, TreeForeignKey
 
 
-class FileCollectionChildMixin:
+class FileCollectionChildMixin(object):
     """ Provides common methods for Files/Directories.
     """
+
     def get_parent_hash(self):
         """ Returns the hash of this object's parent, or '' if this is the
             root of the tree.
@@ -25,12 +24,17 @@ class Directory(MPTTModel, FileCollectionChildMixin):
              being saved with no parent.
     """
     name = models.CharField(max_length=255)
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='dirs')
+    parent = TreeForeignKey('self', on_delete=models.SET_NULL,
+                            null=True, blank=True,
+                            related_name='dirs')
     collection = models.ForeignKey('FileCollection')
 
     class Meta:
         verbose_name_plural = 'directories'
         unique_together = ('name', 'parent')
+
+    class MPTTMeta(object):
+        order_insertion_by = ['name']
 
     def __unicode__(self):
         return self.name
@@ -69,19 +73,6 @@ class FileCollection(models.Model):
         # TODO delete files/dirs when deleting file collection
     """
     name = models.CharField(max_length=255, unique=True)
-    #tree_id = models.CharField(
-    #root_node = models.OneToOneField(Directory)
-
-    def save(self, *args, **kwargs):
-        """ Creates a Directory (root node) when the FileCollection is first
-            created.
-        """
-        created = (self.id is None)
-        super(FileCollection, self).save(*args, **kwargs)
-        if created:
-            root_dir = Directory(name='root_node_%s' % self.id,
-                                 collection=self)
-            root_dir.save()
 
     def __unicode__(self):
         return self.name

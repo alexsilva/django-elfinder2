@@ -11,6 +11,7 @@ from setuptools.command.egg_info import egg_info
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
 README = read('README.rst')
 
 
@@ -34,17 +35,17 @@ class egg_info_with_submodules(egg_info):
 
 setup(
     cmdclass={"build": build_with_submodules, "egg_info": egg_info_with_submodules},
-    name = 'django-elfinder',
-    version = '0.3-ext',
-    description = 'Django connector for elFinder 2 - with support for FS storage and TinyMCE connector',
-    long_description = README,
-    author = 'Martin Bohacek',
-    author_email = 'bohacekm@gmail.com',
-    url = 'https://github.com/bohyn/django-elfinder/',
-    download_url = 'https://github.com/bohyn/django-elfinder/tarball/v0.3-ext',
-    packages = ['elfinder', 'elfinder.volume_drivers'],
+    name='django-elfinder',
+    version='0.3-ext',
+    description='Django connector for elFinder 2 - with support for FS storage and TinyMCE connector',
+    long_description=README,
+    author='Martin Bohacek',
+    author_email='bohacekm@gmail.com',
+    url='https://github.com/bohyn/django-elfinder/',
+    download_url='https://github.com/bohyn/django-elfinder/tarball/v0.3-ext',
+    packages=['elfinder', 'elfinder.volume_drivers'],
     include_package_data=True,
-    install_requires = [
+    install_requires=[
         'django>=1.11',
         'django-mptt>=0.9.0',
         'patool'

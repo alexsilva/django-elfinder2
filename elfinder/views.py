@@ -13,7 +13,7 @@ def index(request, coll_id=None):
         collection.
     """
     # collection = FileCollection.objects.get(pk=coll_id)
-    return render_to_response("elfinder.html",
+    return render_to_response("elfinder/index.html",
                               {'coll_id': coll_id},
                               RequestContext(request))
 
@@ -43,7 +43,7 @@ def connector_view(request, coll_id=None):
     return response
 
 
-def read_file(request, volume, file_hash, template="read_file.html"):
+def read_file(request, volume, file_hash, template="elfinder/read_file.html"):
     """ Default view for responding to "open file" requests.
 
         coll: FileCollection this File belongs to

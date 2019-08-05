@@ -326,7 +326,7 @@ class elFinderFileCmd(elFinderCmdTest):
                 'target': 'fc1_f1'}
         response = self.get_command_response(vars)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'read_file.html')
+        self.assertTemplateUsed(response, 'elfinder/read_file.html')
         self.assertEqual(response.context['file'], self.file)
 
     def test_invalid_file(self):

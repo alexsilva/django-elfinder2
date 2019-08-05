@@ -9,7 +9,7 @@ def tinymce_filebrowser_script_view(request):
     """
     View for rendering JS with TnyMCE file browser callback function.
     """
-    return render(request, "elfinder_tinymce_filebrowser_script.html", content_type="text/javascript")
+    return render(request, "elfinder/tinymce_filebrowser_script.html", content_type="text/javascript")
 
 
 def tinymce_filebrowser_dialog_view(request):
@@ -20,4 +20,4 @@ def tinymce_filebrowser_dialog_view(request):
     if tinymce_popup_js is None:
         raise ImproperlyConfigured("ELFINDER_TINYMCE_PATH_TO_POPUP_JS must be specified in settings")
 
-    return render(request, "elfinder_tinymce_filebrowser_dialog.html", {"tinymce_popup_js": tinymce_popup_js})
+    return render(request, "elfinder/tinymce_filebrowser_dialog.html", {"tinymce_popup_js": tinymce_popup_js})

@@ -131,7 +131,7 @@ class ModelVolumeDriver(BaseVolumeDriver):
 
     def read_file_view(self, request, hash):
         file = self.get_object(hash)
-        return render_to_response('read_file.html',
+        return render_to_response('elfinder/read_file.html',
                                   {'file': file},
                                   RequestContext(request))
 

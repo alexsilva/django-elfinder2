@@ -60,6 +60,7 @@ class ElFinderConnector(object):
                 'extract': ('__extract', {'target': True}),
                 'archive': ('__archive', {'target': True, 'targets[]': True,
                                           'name': True, 'type': True}),
+                'search': ('__search', {'target': True, 'q': True}),
                }
 
     def get_init_params(self):
@@ -87,7 +88,8 @@ class ElFinderConnector(object):
         """
         return ['cmd', 'target', 'targets[]', 'current', 'tree',
                 'name', 'content', 'src', 'dst', 'cut', 'init',
-                'type', 'width', 'height', 'upload[]', 'dirs[]']
+                'type', 'width', 'height', 'upload[]', 'dirs[]',
+                'q']
 
     def get_volume(self, hash):
         """ Returns the volume which contains the file/dir represented by the
@@ -180,6 +182,13 @@ class ElFinderConnector(object):
 
         self.httpResponse = self.response
         return self.httpStatusCode, self.httpHeader, self.httpResponse
+
+    def __search(self):
+        """Do search"""
+        target = self.data['target']
+        query = self.data['q']
+        volume = self.get_volume(target)
+        self.response = volume.search(query, target)
 
     def __parents(self):
         """ Handles the parent command.

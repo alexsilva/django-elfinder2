@@ -8,22 +8,28 @@ from elfinder.connector import ElFinderConnector
 from elfinder.volume_drivers import get_volume_driver
 
 
+def _get_volume_name(request):
+    request_method = getattr(request, request.method)
+    return request_method.get('volume', 'default')
+
+
 def index(request, coll_id=None):
     """ Displays the elFinder file browser template for the specified
         collection.
     """
-    # collection = FileCollection.objects.get(pk=coll_id)
+
     return render_to_response("elfinder/index.html",
-                              {'coll_id': coll_id},
+                              {'coll_id': coll_id,
+                               'volume_name': _get_volume_name(request)},
                               RequestContext(request))
 
 
 def connector_view(request, coll_id=None):
     """ Handles requests for the elFinder connector.
     """
+    volume_name = _get_volume_name(request)
 
-    # model_volume = ModelVolumeDriver(coll_id)
-    volume = get_volume_driver()(collection_id=coll_id)
+    volume = get_volume_driver(volume_name, collection_id=coll_id)
 
     finder = ElFinderConnector([volume])
     finder.run(request)

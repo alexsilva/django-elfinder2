@@ -233,9 +233,8 @@ class DirectoryWrapper(WrapperBase):
 
 
 class FileSystemVolumeDriver(BaseVolumeDriver):
-    def __init__(self, fs_driver_root=elfinder_settings.ELFINDER_FS_DRIVER_ROOT,
-                 *args, **kwargs):
-        self.root = os.path.abspath(fs_driver_root)
+    def __init__(self, fs_root=None, *args, **kwargs):
+        self.root = os.path.abspath(fs_root)
 
     def get_volume_id(self):
         # return u"fsvolume"

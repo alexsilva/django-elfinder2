@@ -119,7 +119,10 @@
                 rememberLastDir: false,
                 placesFirst: false,
                 requestType: 'post',
-                customData: {csrfmiddlewaretoken: Cookies.get('csrftoken'),},
+                customData: {
+                    csrfmiddlewaretoken: Cookies.get('csrftoken'),
+                    volume: "{{ volume_name }}"
+                },
                 uiOptions: {
                     toolbar: [
                         ['back', 'forward'],

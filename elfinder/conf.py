@@ -25,6 +25,12 @@ class LazySettings(LazyObject):
         if not isinstance(self.ELFINDER_VOLUME_DRIVERS, dict):
             raise ImproperlyConfigured('ELFINDER_VOLUME_DRIVERS is not a dict!')
 
+        # login settings
+        self.ELFINDER_LOGIN_REQUIRED = getattr(user_settings, "ELFINDER_LOGIN_REQUIRED",
+                                               False)
+        self.ELFINDER_LOGIN_URL = getattr(user_settings, "ELFINDER_LOGIN_URL",
+                                          user_settings.LOGIN_URL)
+
         self.ELFINDER_FS_DRIVER_URL = getattr(
             user_settings, "ELFINDER_FS_DRIVER_URL",
             user_settings.MEDIA_URL

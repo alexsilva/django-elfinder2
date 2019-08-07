@@ -1,11 +1,21 @@
 import json
 
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.views.decorators.csrf import ensure_csrf_cookie
 
+from elfinder.conf import settings
 from elfinder.connector import ElFinderConnector
 from elfinder.volume_drivers import get_volume_driver
+
+
+def login_required_if_configured(view):
+    """Forces login to view when configured via settings"""
+    if settings.ELFINDER_LOGIN_REQUIRED:
+        return login_required(view, login_url=settings.ELFINDER_LOGIN_URL)
+    return view
 
 
 def _get_volume_name(request):
@@ -13,6 +23,8 @@ def _get_volume_name(request):
     return request_method.get('volume', 'default')
 
 
+@login_required_if_configured
+@ensure_csrf_cookie
 def index(request, coll_id=None):
     """ Displays the elFinder file browser template for the specified
         collection.
@@ -24,6 +36,8 @@ def index(request, coll_id=None):
                               RequestContext(request))
 
 
+@login_required_if_configured
+@ensure_csrf_cookie
 def connector_view(request, coll_id=None):
     """ Handles requests for the elFinder connector.
     """

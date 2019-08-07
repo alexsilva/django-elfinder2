@@ -13,7 +13,7 @@ class LazySettings(LazyObject):
         self._wrapped = Settings()
 
         self.ELFINDER_VOLUME_DRIVERS = getattr(
-            user_settings, "ELFINDER_VOLUME_DRIVER", {
+            user_settings, "ELFINDER_VOLUME_DRIVERS", {
                 "default": {
                     "BACKEND": "elfinder.volume_drivers.model_driver.ModelVolumeDriver",
                 },

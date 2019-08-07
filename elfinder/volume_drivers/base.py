@@ -1,8 +1,8 @@
 
 
 class BaseVolumeDriver(object):
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, request=None, *args, **kwargs):
+        self.request = request
 
     def get_volume_id(self):
         """ Returns the volume ID for the volume, which is used as a prefix

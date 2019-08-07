@@ -1,14 +1,12 @@
 # -#- coding: utf-8 -*-
 import hashlib
+import mimetypes as mimes
 import os
 import shutil
 from datetime import datetime
-import mimetypes as mimes
 
 from django.conf import settings
 from django.core.files import File
-from django.shortcuts import render_to_response
-from django.template import RequestContext
 from django.utils._os import safe_join
 
 from elfinder.conf import settings as elfinder_settings
@@ -233,7 +231,8 @@ class DirectoryWrapper(WrapperBase):
 
 
 class FileSystemVolumeDriver(BaseVolumeDriver):
-    def __init__(self, fs_root=None, *args, **kwargs):
+    def __init__(self, fs_root=settings.MEDIA_ROOT, *args, **kwargs):
+        super(FileSystemVolumeDriver, self).__init__(*args, **kwargs)
         self.root = os.path.abspath(fs_root)
 
     def get_volume_id(self):

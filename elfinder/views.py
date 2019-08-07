@@ -29,7 +29,9 @@ def connector_view(request, coll_id=None):
     """
     volume_name = _get_volume_name(request)
 
-    volume = get_volume_driver(volume_name, collection_id=coll_id)
+    volume = get_volume_driver(volume_name,
+                               request=request,
+                               collection_id=coll_id)
 
     finder = ElFinderConnector([volume])
     finder.run(request)

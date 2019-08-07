@@ -43,6 +43,15 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
+    def search(self, query, hash):
+        """ Search for file/directory
+
+            :param query: search string.
+            :param hash: The hash of the parent directory.
+            :returns: mimes
+        """
+        raise NotImplementedError
+
     def mkdir(self, name, parent):
         """ Creates a directory.
 

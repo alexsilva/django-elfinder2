@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -58,7 +59,9 @@ def connector_view(request, coll_id=None):
     response = HttpResponse(content_type=finder.httpHeader['Content-type'])
     response.status_code = finder.httpStatusCode
     if finder.httpHeader['Content-type'] == 'application/json':
-        response.content = json.dumps(finder.httpResponse)
+        response.content = json.dumps(finder.httpResponse,
+                                      cls=DjangoJSONEncoder,
+                                      ensure_ascii=False)
     else:
         response.content = finder.httpResponse
 

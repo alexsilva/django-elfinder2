@@ -6,11 +6,19 @@ import re
 import shutil
 from datetime import datetime
 
+import chardet
 from django.conf import settings
 from django.core.files import File
+from django.utils.encoding import force_str, smart_text
+from django.utils.six import binary_type
 
 from elfinder.conf import settings as elfinder_settings
 from elfinder.volume_drivers.base import BaseVolumeDriver
+
+try:
+    import urllib.parse as urllib
+except ImportError:
+    import urllib
 
 try:
     import pathlib
@@ -48,8 +56,17 @@ class WrapperBase(object):
             return ''
         return DirectoryWrapper(self.path.parent, self.root).get_hash()
 
+    @staticmethod
+    def bytes_safe_decode(value, encoding='utf-8'):
+        if isinstance(value, binary_type):
+            spec = chardet.detect(value)
+            encoding = spec.get('encoding', encoding) or encoding
+            value = smart_text(value, encoding=encoding)
+        return value
+
     def _real_hash(self, path):
-        enc_path = str(path)
+        enc_path = force_str(str(path),
+                             errors="xmlcharrefreplace")
         m = hashlib.md5(enc_path)
         return str(m.hexdigest())
 
@@ -106,7 +123,7 @@ class FileWrapper(WrapperBase):
         path = self.path
         spath = str(path)
         info = {
-            'name': path.name,
+            'name': self.bytes_safe_decode(path.name),
             'hash': self.get_hash(),
             'date': datetime.fromtimestamp(path.stat().st_mtime).strftime("%d %b %Y %H:%M"),
             'size': self.get_size(),
@@ -117,7 +134,7 @@ class FileWrapper(WrapperBase):
             'phash': self.get_parent_hash() or '',
         }
         if settings.DEBUG:
-            info['abs_path'] = str(path.resolve())
+            info['abs_path'] = self.bytes_safe_decode(spath)
 
         mime, is_image = self.get_mime(spath)
         # if is_image and self.imglib and False:
@@ -144,7 +161,7 @@ class FileWrapper(WrapperBase):
             fs_driver_url += user_path
         if not fs_driver_url.endswith("/") and not rel_path.startswith("/"):
             fs_driver_url += '/'
-        return fs_driver_url + rel_path
+        return urllib.quote_plus(fs_driver_url + rel_path, safe="/")
 
     def get_mime(self, path):
         mime = mimes.guess_type(path)[0] or 'Unknown'
@@ -188,7 +205,7 @@ class DirectoryWrapper(WrapperBase):
         path = self.path
         spath = str(path)
         info = {
-            'name': path.name,
+            'name': self.bytes_safe_decode(path.name),
             'hash': self.get_hash(),
             'date': datetime.fromtimestamp(path.stat().st_mtime).strftime("%d %b %Y %H:%M"),
             'mime': 'directory',
@@ -200,7 +217,7 @@ class DirectoryWrapper(WrapperBase):
             'phash': self.get_parent_hash() or ''
         }
         if settings.DEBUG:
-            info['abs_path'] = str(path.resolve())
+            info['abs_path'] = self.bytes_safe_decode(spath)
         return info
 
     def get_size(self):

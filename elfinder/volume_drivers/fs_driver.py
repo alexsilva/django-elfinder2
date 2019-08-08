@@ -2,6 +2,7 @@
 import hashlib
 import mimetypes as mimes
 import os
+import re
 import shutil
 from datetime import datetime
 
@@ -54,11 +55,12 @@ class WrapperBase(object):
 
 
 class FileWrapper(WrapperBase):
-    def __init__(self, file_path, root):
+    def __init__(self, file_path, root, fs_driver_url):
         if not file_path.is_file():
             raise ValueError("'%s' is not a valid file path" % file_path)
         self._file = self._file_path = None
         self.path = file_path
+        self.fs_driver_url = fs_driver_url
         super(FileWrapper, self).__init__(root)
 
     def is_file(self):
@@ -137,7 +139,12 @@ class FileWrapper(WrapperBase):
     def get_url(self):
         rel_path = self.path.relative_to(self.root).as_posix()
         user_path = '%s/' % (self.root.parts[-1],)
-        return '%s%s%s' % (elfinder_settings.ELFINDER_FS_DRIVER_URL, user_path, rel_path)
+        fs_driver_url = self.fs_driver_url
+        if not re.search("(?:%s)$" % re.escape(user_path), fs_driver_url, re.U):
+            fs_driver_url += user_path
+        if not fs_driver_url.endswith("/") and not rel_path.startswith("/"):
+            fs_driver_url += '/'
+        return fs_driver_url + rel_path
 
     def get_mime(self, path):
         mime = mimes.guess_type(path)[0] or 'Unknown'
@@ -227,6 +234,8 @@ class DirectoryWrapper(WrapperBase):
 class FileSystemVolumeDriver(BaseVolumeDriver):
     def __init__(self, fs_root=settings.MEDIA_ROOT, *args, **kwargs):
         super(FileSystemVolumeDriver, self).__init__(*args, **kwargs)
+        self.fs_driver_url = self.kwargs.get('fs_driver_url',
+                                             elfinder_settings.ELFINDER_FS_DRIVER_URL)
         self.root = pathlib.Path(fs_root).resolve()
 
     def get_volume_id(self):
@@ -271,7 +280,8 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         file_path = self._find_path(hash)
         from django.http import HttpResponse
         resp = HttpResponse(content_type='application/force-download')
-        file = FileWrapper(file_path, self.root)
+        file = FileWrapper(file_path, self.root,
+                           fs_driver_url=self.fs_driver_url)
         for chunk in file.get_chunks():
             resp.write(chunk)
 
@@ -358,7 +368,8 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         for dirpath, dirnames, filenames in os.walk(str(root)):
             for filename in filenames:
                 filepath = self.root.joinpath(dirpath, filename)
-                f_obj = FileWrapper(filepath, self.root)
+                f_obj = FileWrapper(filepath, self.root,
+                                    fs_driver_url=self.fs_driver_url)
                 if fhash == f_obj.get_hash():
                     final_path = filepath
                     if resolution:
@@ -397,7 +408,8 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         if path.is_dir():
             return DirectoryWrapper(path, root=self.root)
         else:
-            return FileWrapper(path, root=self.root)
+            return FileWrapper(path, root=self.root,
+                               fs_driver_url=self.fs_driver_url)
 
     def _get_path_info(self, path):
         return self._get_path_object(path).get_info()

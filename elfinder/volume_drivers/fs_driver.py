@@ -157,10 +157,10 @@ class FileWrapper(WrapperBase):
         self.path.unlink()
 
     @classmethod
-    def mkfile(cls, file_path, root):
+    def mkfile(cls, file_path, root, fs_driver_url):
         if not file_path.is_file():
             with file_path.open("w"):
-                return cls(file_path, root)
+                return cls(file_path, root, fs_driver_url=fs_driver_url)
         else:
             raise Exception("File '%s' already exists" % file_path.name)
 
@@ -295,7 +295,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
     def mkfile(self, name, parent):
         parent_path = self._find_path(parent)
         new_abs_path = self.root / parent_path / name
-        return FileWrapper.mkfile(new_abs_path, self.root).get_info()
+        return FileWrapper.mkfile(new_abs_path, self.root, self.fs_driver_url).get_info()
 
     def rename(self, name, target):
         obj = self._get_path_object(self._find_path(target))
@@ -348,7 +348,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
             for upload in files.getlist('upload[]'):
                 new_abs_path = self.root / parent.path / upload.name
                 try:
-                    new_file = FileWrapper.mkfile(new_abs_path, self.root)
+                    new_file = FileWrapper.mkfile(new_abs_path, self.root, self.fs_driver_url)
                     new_file.contents = upload.read()
                     added.append(new_file.get_info())
                 except Exception:

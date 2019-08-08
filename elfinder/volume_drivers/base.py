@@ -2,6 +2,8 @@
 
 class BaseVolumeDriver(object):
     def __init__(self, request=None, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
         self.request = request
 
     def get_volume_id(self):

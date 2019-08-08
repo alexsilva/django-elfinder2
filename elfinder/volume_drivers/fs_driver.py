@@ -321,7 +321,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
             for target in targets:
                 orig_abs_path = self._find_path(target)
                 orig_obj = self._get_path_object(orig_abs_path)
-                new_abs_path = self.root / dest_dir.get_path() / orig_abs_path.name
+                new_abs_path = self.root / dest_dir.path / orig_abs_path.name
                 if cut:
                     _fnc = shutil.move
                     removed.append(orig_obj.get_info()['hash'])

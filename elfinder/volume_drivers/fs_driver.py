@@ -397,6 +397,10 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
 
     # private methods
 
+    @staticmethod
+    def _path_safe_resolution(path):
+        return pathlib.Path(WrapperBase.bytes_safe_decode(str(path)))
+
     def _find_path(self, fhash, root=None, resolution=False):
         if root is None:
             root = self.root
@@ -414,7 +418,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
                     final_path = filepath
                     if resolution:
                         try:
-                            final_path = pathlib.Path(str(final_path, 'utf8'))
+                            final_path = self._path_safe_resolution(final_path)
                         except:
                             pass
                     return final_path
@@ -426,7 +430,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
                     final_path = child_dirpath
                     if resolution:
                         try:
-                            final_path = pathlib.Path(str(final_path, 'utf8'))
+                            final_path = self._path_safe_resolution(final_path)
                         except:
                             pass
                     return final_path
@@ -437,7 +441,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
                 final_path = dirpath
                 if resolution:
                     try:
-                        final_path = pathlib.Path(str(final_path, 'utf8'))
+                        final_path = self._path_safe_resolution(final_path)
                     except:
                         pass
                 return final_path

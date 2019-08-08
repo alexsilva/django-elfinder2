@@ -45,7 +45,7 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
-    def search(self, query, hash):
+    def search(self, text, target):
         """ Search for file/directory
 
             :param query: search string.

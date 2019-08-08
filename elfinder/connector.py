@@ -188,7 +188,7 @@ class ElFinderConnector(object):
         target = self.data['target']
         query = self.data['q']
         volume = self.get_volume(target)
-        self.response = volume.search(query, target)
+        self.response['files'] = volume.search(query, target)
 
     def __parents(self):
         """ Handles the parent command.

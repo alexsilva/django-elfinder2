@@ -249,6 +249,7 @@ class DirectoryWrapper(WrapperBase):
 
 
 class FileSystemVolumeDriver(BaseVolumeDriver):
+
     def __init__(self, fs_root=settings.MEDIA_ROOT, *args, **kwargs):
         super(FileSystemVolumeDriver, self).__init__(*args, **kwargs)
         self.fs_driver_url = self.kwargs.get('fs_driver_url',
@@ -261,6 +262,28 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
     def get_info(self, target):
         path = self._find_path(target)
         return self._get_path_info(path)
+
+    def search(self, text, target):
+        """Search for files"""
+        path = self._find_path(target)
+        text_parts = [v for v in text.split() if v]
+        result = []
+        for dirpath, dirnames, filenames in os.walk(str(path)):
+            for dirname in dirnames:
+                pattern = re.compile("(?:%s)" % re.escape(dirname), re.I | re.U)
+                for text in text_parts:
+                    if pattern.search(text):
+                        info = DirectoryWrapper(path.joinpath(dirpath, dirname), self.root).get_info()
+                        result.append(info)
+            for filename in filenames:
+                pattern = re.compile("(?:%s)" % re.escape(filename), re.I | re.U)
+                for text in text_parts:
+                    if pattern.search(text):
+                        info = FileWrapper(path.joinpath(dirpath, filename),
+                                           self.root,
+                                           self.fs_driver_url).get_info()
+                        result.append(info)
+        return result
 
     def get_tree(self, target, ancestors=False, siblings=False):
         path = self._find_path(target)

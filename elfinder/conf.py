@@ -19,7 +19,7 @@ class LazySettings(LazyObject):
                 },
                 "fs": {
                     "BACKEND": "elfinder.volume_drivers.fs_driver.FileSystemVolumeDriver",
-                    "OPTIONS": {"fs_root": user_settings.MEDIA_ROOT}
+                    "OPTIONS": {"fs_driver_root": user_settings.MEDIA_ROOT}
                 }
             })
         if not isinstance(self.ELFINDER_VOLUME_DRIVERS, dict):

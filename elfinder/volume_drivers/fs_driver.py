@@ -250,11 +250,11 @@ class DirectoryWrapper(WrapperBase):
 
 class FileSystemVolumeDriver(BaseVolumeDriver):
 
-    def __init__(self, fs_root=settings.MEDIA_ROOT, *args, **kwargs):
+    def __init__(self, fs_driver_root=settings.MEDIA_ROOT, *args, **kwargs):
         super(FileSystemVolumeDriver, self).__init__(*args, **kwargs)
         self.fs_driver_url = self.kwargs.get('fs_driver_url',
                                              elfinder_settings.ELFINDER_FS_DRIVER_URL)
-        self.root = pathlib.Path(fs_root).resolve()
+        self.root = pathlib.Path(fs_driver_root).resolve()
 
     def get_volume_id(self):
         return DirectoryWrapper(self.root, self.root).get_hash().split("_")[0]

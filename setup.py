@@ -48,6 +48,7 @@ setup(
     install_requires=[
         'django>=1.11',
         'django-mptt>=0.9.0',
+        'pathlib2; python_version <"3.0"',
         'patool'
     ],
 )

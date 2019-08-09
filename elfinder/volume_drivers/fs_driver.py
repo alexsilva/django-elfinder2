@@ -216,6 +216,11 @@ class DirectoryWrapper(WrapperBase):
             'dirs': self.has_dirs(),
             'phash': self.get_parent_hash() or ''
         }
+
+        # operation too expensive to always be active.
+        if self.options.get('driver_fs_info_directory_size'):
+            info['size'] = self.get_size()
+
         if settings.DEBUG:
             info['abs_path'] = self.bytes_safe_decode(spath)
         return info

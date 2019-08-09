@@ -31,8 +31,9 @@ class FileExists(IOError):
 
 
 class WrapperBase(object):
-    def __init__(self, root):
+    def __init__(self, root, **options):
         self.root = root
+        self.options = options
 
     def rename(self, new_name):
         new_abs_path = self.root.joinpath(self.path.parent, new_name)
@@ -54,7 +55,7 @@ class WrapperBase(object):
     def get_parent_hash(self):
         if self.path.resolve() == self.root.resolve():
             return ''
-        return DirectoryWrapper(self.path.parent, self.root).get_hash()
+        return DirectoryWrapper(self.path.parent, self.root, **self.options).get_hash()
 
     @staticmethod
     def bytes_safe_decode(value, encoding='utf-8'):
@@ -72,13 +73,13 @@ class WrapperBase(object):
 
 
 class FileWrapper(WrapperBase):
-    def __init__(self, file_path, root, fs_driver_url):
+    def __init__(self, file_path, root, fs_driver_url, **options):
         if not file_path.is_file():
             raise ValueError("'%s' is not a valid file path" % file_path)
         self._file = self._file_path = None
         self.path = file_path
         self.fs_driver_url = fs_driver_url
-        super(FileWrapper, self).__init__(root)
+        super(FileWrapper, self).__init__(root, **options)
 
     def is_file(self):
         return self.path.is_file()
@@ -183,12 +184,12 @@ class FileWrapper(WrapperBase):
 
 
 class DirectoryWrapper(WrapperBase):
-    def __init__(self, dir_path, root):
+    def __init__(self, dir_path, root, **options):
         if not dir_path.is_dir():
             raise ValueError("'%s' is not a valid dir path" % dir_path)
         self._dir_path = None
         self.path = dir_path
-        super(DirectoryWrapper, self).__init__(root)
+        super(DirectoryWrapper, self).__init__(root, **options)
 
     def is_dir(self):
         return self.path.is_dir()
@@ -209,7 +210,6 @@ class DirectoryWrapper(WrapperBase):
             'hash': self.get_hash(),
             'date': datetime.fromtimestamp(path.stat().st_mtime).strftime("%d %b %Y %H:%M"),
             'mime': 'directory',
-            'size': self.get_size(),
             'read': os.access(spath, os.R_OK),
             'write': os.access(spath, os.W_OK),
             'rm': os.access(spath, os.W_OK),
@@ -239,11 +239,11 @@ class DirectoryWrapper(WrapperBase):
         shutil.rmtree(str(self.path))
 
     @classmethod
-    def mkdir(cls, dir_path, root):
+    def mkdir(cls, dir_path, root, **options):
         if not dir_path.exists():
             dir_path.mkdir(parents=True,
                            exist_ok=True)
-            return cls(dir_path, root)
+            return cls(dir_path, root, **options)
         else:
             raise Exception("Directory '%s' already exists" % os.path.basename(dir_path))
 
@@ -257,7 +257,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         self.root = pathlib.Path(fs_driver_root).resolve()
 
     def get_volume_id(self):
-        return DirectoryWrapper(self.root, self.root).get_hash().split("_")[0]
+        return DirectoryWrapper(self.root, self.root, **self.kwargs).get_hash().split("_")[0]
 
     def get_info(self, target):
         path = self._find_path(target)
@@ -272,7 +272,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         for dirpath, dirnames, filenames in os.walk(str(path)):
             for dirname in dirnames:
                 if pattern.search(dirname):
-                    info = DirectoryWrapper(path.joinpath(dirpath, dirname), self.root).get_info()
+                    info = DirectoryWrapper(path.joinpath(dirpath, dirname), self.root, **self.kwargs).get_info()
                     result.append(info)
             for filename in filenames:
                 if pattern.search(filename):
@@ -327,7 +327,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
     def mkdir(self, name, parent):
         parent_path = self._find_path(parent)
         new_abs_path = self.root / parent_path / name
-        return DirectoryWrapper.mkdir(new_abs_path, self.root).get_info()
+        return DirectoryWrapper.mkdir(new_abs_path, self.root, **self.kwargs).get_info()
 
     def mkfile(self, name, parent):
         parent_path = self._find_path(parent)
@@ -422,7 +422,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
 
             for dirname in dirnames:
                 child_dirpath = self.root.joinpath(dirpath, dirname)
-                d_obj = DirectoryWrapper(child_dirpath, self.root)
+                d_obj = DirectoryWrapper(child_dirpath, self.root, **self.kwargs)
                 if fhash == d_obj.get_hash():
                     final_path = child_dirpath
                     if resolution:
@@ -433,7 +433,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
                     return final_path
 
             dirpath = pathlib.Path(dirpath).resolve()
-            d_obj = DirectoryWrapper(dirpath, self.root)
+            d_obj = DirectoryWrapper(dirpath, self.root, **self.kwargs)
             if fhash == d_obj.get_hash():
                 final_path = dirpath
                 if resolution:
@@ -447,7 +447,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
 
     def _get_path_object(self, path):
         if path.is_dir():
-            return DirectoryWrapper(path, root=self.root)
+            return DirectoryWrapper(path, root=self.root, **self.kwargs)
         else:
             return FileWrapper(path, root=self.root,
                                fs_driver_url=self.fs_driver_url)

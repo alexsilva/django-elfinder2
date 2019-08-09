@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ElFinderConnector(object):
-    _version = '2.0'
+    _version = '2.1'
 
     def __init__(self, volumes=None):
         if volumes is None:
@@ -69,7 +69,7 @@ class ElFinderConnector(object):
             The returned dict will be merged with response during the __open
             command.
         """
-        return {'api': '2.0',
+        return {'api': self._version,
                 'uplMaxSize': '128M',
                 'options': {'separator': '/',
                             'disabled': [],

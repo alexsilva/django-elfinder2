@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from celery.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 
 from elfinder.conf import settings as elfinder_settings
 from elfinder.helpers import get_module_class

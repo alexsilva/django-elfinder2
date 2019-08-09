@@ -35,11 +35,12 @@ class VolumeDriver(object):
         return True
 
     def __bool__(self):
-        return self.access_view is True
+        return self.login_view is True
+
     __nonzero__ = __bool__
 
     @cached_property
-    def access_view(self):
+    def login_view(self):
         """Checks if volume is project by authentication.
         (redirect to view accordingly)"""
         if self.volume.login_required:
@@ -61,8 +62,8 @@ def index(request, coll_id=None):
     """
     volume = VolumeDriver(request, collection_id=coll_id)
 
-    if not volume: # not has access
-        return volume.access_view
+    if not volume:  # not has access
+        return volume.login_view
 
     return render_to_response("elfinder/index.html",
                               {'coll_id': coll_id,
@@ -79,7 +80,7 @@ def connector_view(request, coll_id=None):
                                  collection_id=coll_id)
 
     if not volume_driver:  # not has access
-        return volume_driver.access_view
+        return volume_driver.login_view
 
     finder = ElFinderConnector([volume_driver.volume])
     finder.run(request)

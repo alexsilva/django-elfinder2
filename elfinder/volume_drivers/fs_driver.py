@@ -266,23 +266,20 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
     def search(self, text, target):
         """Search for files"""
         path = self._find_path(target)
-        text_parts = [v for v in text.split() if v]
+        ptext = "|".join([re.escape(v) for v in text.split() if v])
+        pattern = re.compile("(?:%s)" % ptext, re.I | re.U)
         result = []
         for dirpath, dirnames, filenames in os.walk(str(path)):
             for dirname in dirnames:
-                pattern = re.compile("(?:%s)" % re.escape(dirname), re.I | re.U)
-                for text in text_parts:
-                    if pattern.search(text):
-                        info = DirectoryWrapper(path.joinpath(dirpath, dirname), self.root).get_info()
-                        result.append(info)
+                if pattern.search(dirname):
+                    info = DirectoryWrapper(path.joinpath(dirpath, dirname), self.root).get_info()
+                    result.append(info)
             for filename in filenames:
-                pattern = re.compile("(?:%s)" % re.escape(filename), re.I | re.U)
-                for text in text_parts:
-                    if pattern.search(text):
-                        info = FileWrapper(path.joinpath(dirpath, filename),
-                                           self.root,
-                                           self.fs_driver_url).get_info()
-                        result.append(info)
+                if pattern.search(filename):
+                    info = FileWrapper(path.joinpath(dirpath, filename),
+                                       self.root,
+                                       self.fs_driver_url).get_info()
+                    result.append(info)
         return result
 
     def get_tree(self, target, ancestors=False, siblings=False):

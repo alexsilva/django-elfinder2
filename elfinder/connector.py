@@ -250,9 +250,9 @@ class ElFinderConnector(object):
             # Assume the first volume's root is the currently open directory.
             volume = next(iter(self.volumes.values()))
             target_data = volume.get_data('')
-            self.response['cwd'] = target_data['info']
             # volume target options
             self.response.update(target_data['options'])
+            self.response['cwd'] = target_data['info']
             # Add relevant tree information for each volume
             for volume_id in self.volumes:
                 volume = self.volumes[volume_id]
@@ -264,9 +264,9 @@ class ElFinderConnector(object):
             # that directory.
             volume = self.get_volume(target)
             target_data = volume.get_data(target)
-            self.response['cwd'] = target_data['info']
             # volume target options
             self.response.update(target_data['options'])
+            self.response['cwd'] = target_data['info']
             self.response['files'] = volume.get_tree(target,
                                                      inc_ancestors,
                                                      inc_siblings)

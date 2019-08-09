@@ -71,6 +71,9 @@ class WrapperBase(object):
         m = hashlib.md5(enc_path)
         return str(m.hexdigest())
 
+    def get_options(self):
+        return {"options": {}}
+
 
 class FileWrapper(WrapperBase):
     def __init__(self, file_path, root, fs_driver_url, **options):
@@ -268,6 +271,13 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
         path = self._find_path(target)
         return self._get_path_info(path)
 
+    def get_data(self, target):
+        path = self._find_path(target)
+        return {
+            'info': self._get_path_info(path),
+            'options': self._get_path_options(path)
+        }
+
     def search(self, text, target):
         """Search for files"""
         path = self._find_path(target)
@@ -459,3 +469,9 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
 
     def _get_path_info(self, path):
         return self._get_path_object(path).get_info()
+
+    def _get_path_options(self, path):
+        options = self.get_options()
+        opts = self._get_path_object(path).get_options()
+        options.update(opts)
+        return options

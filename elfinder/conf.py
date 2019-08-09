@@ -22,7 +22,8 @@ class LazySettings(LazyObject):
                     "OPTIONS": {
                         "fs_driver_root": user_settings.MEDIA_ROOT,
                         "login_url": user_settings.LOGIN_URL,
-                        "login_required": False
+                        "login_required": False,
+                        "js_api_options": {}
                     }
                 }
             })

@@ -32,6 +32,17 @@ class BaseVolumeDriver(object):
             test_func = lambda u: u.is_authenticated
         return test_func
 
+    def get_options(self):
+        """Volume config defaults"""
+        options = {
+            'uplMaxSize': '128M',
+            'options': {'separator': '/',
+                        'disabled': [],
+                        'copyOverwrite': 1}
+        }
+        options.update(self.kwargs.get('js_api_options', {}))
+        return options
+
     def get_info(self, target):
         """ Returns a dict containing information about the target directory
             or file. This data is used in response to 'open' commands to
@@ -41,6 +52,10 @@ class BaseVolumeDriver(object):
             If this is '', return information about the root directory.
             :returns: dict -- A dict describing the directory.
         """
+        raise NotImplementedError
+
+    def get_data(self, target):
+        """Return info, options from target as  dict{info,option}"""
         raise NotImplementedError
 
     def get_tree(self, target, ancestors=False, siblings=False):

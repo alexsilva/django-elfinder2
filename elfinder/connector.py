@@ -69,19 +69,7 @@ class ElFinderConnector(object):
             The returned dict will be merged with response during the __open
             command.
         """
-        return {'api': self._version,
-                'uplMaxSize': '128M',
-                'options': {'separator': '/',
-                            'disabled': [],
-                            'archivers': {"create": [
-                                "application/zip",
-                            ],
-                            "extract": [
-                                "application/rar",
-                                "application/zip",
-                            ]},
-                            'copyOverwrite': 1}
-               }
+        return {'api': self._version}
 
     def get_allowed_http_params(self):
         """ Returns a list of parameters allowed during GET/POST requests.
@@ -261,8 +249,10 @@ class ElFinderConnector(object):
 
             # Assume the first volume's root is the currently open directory.
             volume = next(iter(self.volumes.values()))
-            self.response['cwd'] = volume.get_info('')
-
+            target_data = volume.get_data('')
+            self.response['cwd'] = target_data['info']
+            # volume target options
+            self.response.update(target_data['options'])
             # Add relevant tree information for each volume
             for volume_id in self.volumes:
                 volume = self.volumes[volume_id]
@@ -273,7 +263,10 @@ class ElFinderConnector(object):
             # A target was specified, so we only need to return info about
             # that directory.
             volume = self.get_volume(target)
-            self.response['cwd'] = volume.get_info(target)
+            target_data = volume.get_data(target)
+            self.response['cwd'] = target_data['info']
+            # volume target options
+            self.response.update(target_data['options'])
             self.response['files'] = volume.get_tree(target,
                                                      inc_ancestors,
                                                      inc_siblings)

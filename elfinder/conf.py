@@ -19,17 +19,15 @@ class LazySettings(LazyObject):
                 },
                 "fs": {
                     "BACKEND": "elfinder.volume_drivers.fs_driver.FileSystemVolumeDriver",
-                    "OPTIONS": {"fs_driver_root": user_settings.MEDIA_ROOT}
+                    "OPTIONS": {
+                        "fs_driver_root": user_settings.MEDIA_ROOT,
+                        "login_url": user_settings.LOGIN_URL,
+                        "login_required": False
+                    }
                 }
             })
         if not isinstance(self.ELFINDER_VOLUME_DRIVERS, dict):
             raise ImproperlyConfigured('ELFINDER_VOLUME_DRIVERS is not a dict!')
-
-        # login settings
-        self.ELFINDER_LOGIN_REQUIRED = getattr(user_settings, "ELFINDER_LOGIN_REQUIRED",
-                                               False)
-        self.ELFINDER_LOGIN_URL = getattr(user_settings, "ELFINDER_LOGIN_URL",
-                                          user_settings.LOGIN_URL)
 
         self.ELFINDER_FS_DRIVER_URL = getattr(
             user_settings, "ELFINDER_FS_DRIVER_URL",

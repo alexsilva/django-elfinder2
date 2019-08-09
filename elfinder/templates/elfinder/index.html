@@ -121,7 +121,7 @@
                 requestType: 'post',
                 customData: {
                     csrfmiddlewaretoken: Cookies.get('csrftoken'),
-                    volume: "{{ volume.name }}"
+                    volume: "{{ volume_driver.name }}"
                 },
                 uiOptions: {
                     toolbar: [

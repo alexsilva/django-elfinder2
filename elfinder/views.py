@@ -60,14 +60,14 @@ def index(request, coll_id=None):
     """ Displays the elFinder file browser template for the specified
         collection.
     """
-    volume = VolumeDriver(request, collection_id=coll_id)
+    volume_driver = VolumeDriver(request, collection_id=coll_id)
 
-    if not volume:  # not has access
-        return volume.login_view
+    if not volume_driver:  # not has access
+        return volume_driver.login_view
 
     return render_to_response("elfinder/index.html",
                               {'coll_id': coll_id,
-                               'volume': volume},
+                               'volume_driver': volume_driver},
                               RequestContext(request))
 
 

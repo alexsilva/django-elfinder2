@@ -1,3 +1,6 @@
+from django.utils.functional import cached_property
+from django.utils.module_loading import import_string
+from django.utils.six import string_types
 
 
 class BaseVolumeDriver(object):
@@ -11,6 +14,23 @@ class BaseVolumeDriver(object):
             for client hashes.
         """
         raise NotImplementedError
+
+    @cached_property
+    def login_required(self):
+        return bool(self.kwargs.get('login_required'))
+
+    @cached_property
+    def login_url(self):
+        return self.kwargs.get('login_url')
+
+    @cached_property
+    def login_test_func(self):
+        test_func = self.kwargs.get('login_test_func')
+        if isinstance(test_func, string_types):
+            test_func = import_string(test_func)
+        else:
+            test_func = lambda u: u.is_authenticated
+        return test_func
 
     def get_info(self, target):
         """ Returns a dict containing information about the target directory

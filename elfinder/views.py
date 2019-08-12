@@ -13,15 +13,19 @@ from elfinder.volume_drivers import get_volume_driver
 
 
 class VolumeDriver(object):
-    def __init__(self, request, json_response=False, **options):
+    def __init__(self, request, json_response=False, name=None, **options):
         self.request = request
         self.options = options
         self.json_response = json_response
+        self._name = name
 
     @cached_property
     def name(self):
-        request_method = getattr(self.request, self.request.method)
-        return request_method.get('volume', 'default')
+        if self._name is None:
+            request_method = getattr(self.request, self.request.method)
+            return request_method.get('volume', 'default')
+        else:
+            return self._name
 
     @cached_property
     def volume(self):

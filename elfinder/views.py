@@ -4,10 +4,10 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render_to_response
-from django.template import RequestContext
 from django.utils.functional import cached_property
 from django.views.decorators.csrf import ensure_csrf_cookie
 
+from elfinder.conf import settings
 from elfinder.connector import ElFinderConnector
 from elfinder.volume_drivers import get_volume_driver
 
@@ -64,11 +64,13 @@ def index(request, coll_id=None):
 
     if not volume_driver:  # not has access
         return volume_driver.login_view
-
+    context = {
+        'coll_id': coll_id,
+        'volume_driver': volume_driver
+    }
     return render_to_response("elfinder/index.html",
-                              {'coll_id': coll_id,
-                               'volume_driver': volume_driver},
-                              RequestContext(request))
+                              context=context,
+                              using=settings.ELFINDER_TEMPLATE_ENGINE)
 
 
 @ensure_csrf_cookie
@@ -109,5 +111,5 @@ def read_file(request, volume, file_hash, template="elfinder/read_file.html"):
         file: The requested File object
     """
     return render_to_response(template,
-                              {'file': file_hash},
-                              RequestContext(request))
+                              context={'file': file_hash},
+                              using=settings.ELFINDER_TEMPLATE_ENGINE)

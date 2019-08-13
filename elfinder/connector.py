@@ -78,7 +78,7 @@ class ElFinderConnector(object):
         return ['cmd', 'target', 'targets[]', 'current', 'tree',
                 'name', 'content', 'src', 'dst', 'cut', 'init',
                 'type', 'width', 'height', 'upload[]', 'dirs[]',
-                'q']
+                'q', 'download']
 
     def get_volume(self, hash):
         """ Returns the volume which contains the file/dir represented by the
@@ -177,7 +177,12 @@ class ElFinderConnector(object):
         targets = self.data["targets[]"]
         download = bool(int(self.data.get('download', 0)))
         volume = self.get_volume(targets[0])
-        return volume.zip_download(targets, download)
+        result = volume.zip_download(targets, download)
+        if not download:
+            self.response['zipdl'] = result
+        else:
+            self.is_return_view = True
+            self.return_view = result
 
     def __search(self):
         """Do search"""

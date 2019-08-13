@@ -54,6 +54,14 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
+    def zip_download(self, targets, dl=False):
+        """ Prepare files for download
+
+            :param targets[]: array of hashed paths of the nodes
+            :returns: dict -- A dict describing the zip file.
+        """
+        raise NotImplementedError
+
     def get_tree(self, target, ancestors=False, siblings=False):
         """ Gets a list of dicts describing children/ancestors/siblings of the
             target.

@@ -61,6 +61,7 @@ class ElFinderConnector(object):
                 'archive': ('__archive', {'target': True, 'targets[]': True,
                                           'name': True, 'type': True}),
                 'search': ('__search', {'target': True, 'q': True}),
+                'zipdl': ('__zip_download', {'targets[]': True})
                }
 
     def get_init_params(self):
@@ -170,6 +171,13 @@ class ElFinderConnector(object):
 
         self.httpResponse = self.response
         return self.httpStatusCode, self.httpHeader, self.httpResponse
+
+    def __zip_download(self):
+        """pack files in temp zip file"""
+        targets = self.data["targets[]"]
+        download = bool(int(self.data.get('download', 0)))
+        volume = self.get_volume(targets[0])
+        return volume.zip_download(targets, download)
 
     def __search(self):
         """Do search"""

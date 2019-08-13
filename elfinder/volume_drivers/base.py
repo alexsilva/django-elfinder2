@@ -54,10 +54,6 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
-    def get_data(self, target):
-        """Return info, options from target as  dict{info,option}"""
-        raise NotImplementedError
-
     def get_tree(self, target, ancestors=False, siblings=False):
         """ Gets a list of dicts describing children/ancestors/siblings of the
             target.

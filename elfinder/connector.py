@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ElFinderConnector(object):
-    _version = '2.0'
+    _version = '2.1'
 
     def __init__(self, volumes=None):
         if volumes is None:
@@ -249,6 +249,7 @@ class ElFinderConnector(object):
 
             # Assume the first volume's root is the currently open directory.
             volume = next(iter(self.volumes.values()))
+            self.response.update(volume.get_options())
             self.response['cwd'] = volume.get_info('')
 
             # Add relevant tree information for each volume
@@ -261,6 +262,7 @@ class ElFinderConnector(object):
             # A target was specified, so we only need to return info about
             # that directory.
             volume = self.get_volume(target)
+            self.response.update(volume.get_options())
             self.response['cwd'] = volume.get_info(target)
             self.response['files'] = volume.get_tree(target,
                                                      inc_ancestors,

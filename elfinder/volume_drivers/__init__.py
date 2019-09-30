@@ -11,5 +11,6 @@ def get_volume_driver(name='default', **options):
         raise ImproperlyConfigured(u"volume driver name '{0!s}' not found!".format(name))
     driver = volume.get('BACKEND')
     driver_options = volume.get('OPTIONS', {})
+    options['volume_driver_name'] = name
     driver_options.update(options)
     return get_module_class(driver)(**driver_options)

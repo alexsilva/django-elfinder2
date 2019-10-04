@@ -49,7 +49,9 @@ class ElFinderConnector(object):
                 'tree': ('__tree', {'target': True}),
                 'file': ('__file', {'target': True}),
                 'parents': ('__parents', {'target': True}),
-                'mkdir': ('__mkdir', {'target': True, 'name': True}),
+                # is multiple options
+                'mkdir': [('__mkdir', {'target': True, 'name': True}),
+                          ('__mkdirs', {'target': True, 'dirs': True})],
                 'mkfile': ('__mkfile', {'target': True, 'name': True}),
                 'rename': ('__rename', {'target': True, 'name': True}),
                 'ls': ('__list', {'target': True}),
@@ -153,7 +155,7 @@ class ElFinderConnector(object):
                 if field == "targets[]":
                     self.data[field] = data_source.getlist(field)
                 elif field == "dirs[]":
-                    self.data['name'] = data_source.getlist(field)[0]
+                    self.data['dirs'] = data_source.getlist(field)
                 else:
                     self.data[field] = data_source[field]
 
@@ -162,8 +164,16 @@ class ElFinderConnector(object):
         commands = self.get_commands()
         if 'cmd' in self.data:
             if self.data['cmd'] in commands:
-                cmd = commands[self.data['cmd']]
-                self.run_command(cmd[0], cmd[1])
+                cmd_options = commands[self.data['cmd']]
+                if isinstance(cmd_options, list):
+                    for func_name, command_variables in cmd_options:
+                        if self.check_command_variables(command_variables):
+                            self.run_command(func_name, command_variables)
+                            break
+                    else:
+                        self.response['error'] = 'Invalid arguments'
+                else:
+                    self.run_command(cmd_options[0], cmd_options[1])
             else:
                 self.response['error'] = 'Unknown command'
         else:
@@ -290,6 +300,14 @@ class ElFinderConnector(object):
         target = self.data['target']
         volume = self.get_volume(target)
         self.response['added'] = [volume.mkdir(self.data['name'], target)]
+
+    def __mkdirs(self):
+        target = self.data['target']
+        volume = self.get_volume(target)
+        added = []
+        for dirname in self.data['dirs']:
+            added.append(volume.mkdir(dirname, target))
+        self.response['added'] = added
 
     def __mkfile(self):
         target = self.data['target']

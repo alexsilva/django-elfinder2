@@ -3,7 +3,7 @@ import json
 from django.contrib.auth.decorators import user_passes_test
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.utils.functional import cached_property
 from django.views.decorators.csrf import ensure_csrf_cookie
 
@@ -72,9 +72,9 @@ def index(request, coll_id=None):
         'coll_id': coll_id,
         'volume_driver': volume_driver
     }
-    return render_to_response("elfinder/index.html",
-                              context=context,
-                              using=settings.ELFINDER_TEMPLATE_ENGINE)
+    return render(request, "elfinder/index.html",
+                  context=context,
+                  using=settings.ELFINDER_TEMPLATE_ENGINE)
 
 
 @ensure_csrf_cookie
@@ -114,6 +114,6 @@ def read_file(request, volume, file_hash, template="elfinder/read_file.html"):
         coll: FileCollection this File belongs to
         file: The requested File object
     """
-    return render_to_response(template,
-                              context={'file': file_hash},
-                              using=settings.ELFINDER_TEMPLATE_ENGINE)
+    return render(request, template,
+                  context={'file': file_hash},
+                  using=settings.ELFINDER_TEMPLATE_ENGINE)

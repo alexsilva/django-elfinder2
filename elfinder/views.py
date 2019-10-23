@@ -5,6 +5,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils.functional import cached_property
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from elfinder.conf import settings
@@ -60,6 +61,7 @@ class VolumeDriver(object):
 
 
 @ensure_csrf_cookie
+@never_cache
 def index(request, coll_id=None):
     """ Displays the elFinder file browser template for the specified
         collection.

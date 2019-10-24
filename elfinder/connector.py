@@ -59,7 +59,13 @@ class ElFinderConnector(object):
                                       'dst': True, 'cut': True,
                                       'suffix': True}),
                 'rm': ('__remove', {'targets[]': True}),
-                'upload': ('__upload', {'target': True}),
+                'upload': [('__upload', {'target': True, 'overwrite': False,
+                                         'renames[]': False, 'chunk': False}),
+                           ('__upload_chunked', {'target': True, 'overwrite': False,
+                                                 'chunk': True, 'cid': True}),
+                           ('__upload_chunked_req', {'target': True, 'overwrite': False,
+                                                     'chunk': True, 'cid': False,
+                                                     'upload[]': True})],
                 'extract': ('__extract', {'target': True}),
                 'archive': ('__archive', {'target': True, 'targets[]': True,
                                           'name': True, 'type': True}),
@@ -81,7 +87,8 @@ class ElFinderConnector(object):
         return ['cmd', 'target', 'targets[]', 'current', 'tree',
                 'name', 'content', 'src', 'dst', 'cut', 'init',
                 'type', 'width', 'height', 'upload[]', 'dirs[]',
-                'q', 'download', 'suffix']
+                'q', 'download', 'suffix', 'overwrite', 'renames[]',
+                'chunk', 'cid', 'range']
 
     def get_volume(self, hash):
         """ Returns the volume which contains the file/dir represented by the
@@ -153,10 +160,8 @@ class ElFinderConnector(object):
         # Copy allowed parameters from the given request's GET to self.data
         for field in self.get_allowed_http_params():
             if field in data_source:
-                if field == "targets[]":
+                if field in ["targets[]", "dirs[]", "renames[]", "upload[]"]:
                     self.data[field] = data_source.getlist(field)
-                elif field == "dirs[]":
-                    self.data['dirs'] = data_source.getlist(field)
                 else:
                     self.data[field] = data_source[field]
 
@@ -395,3 +400,23 @@ class ElFinderConnector(object):
         parent = self.data['target']
         volume = self.get_volume(parent)
         self.response.update(volume.upload(self.request.FILES, parent))
+
+    def __upload_chunked(self):
+        parent = self.data['target']
+
+        cid = self.data['cid']
+        chunk = self.data['chunk']
+        bytes_range = self.data['range']
+
+        volume = self.get_volume(parent)
+
+        data = volume.upload_chunked(self.request.FILES, parent, cid, chunk, bytes_range)
+        self.response.update(data)
+
+    def __upload_chunked_req(self):
+        parent = self.data['target']
+        volume = self.get_volume(parent)
+        chunk = self.data['chunk']
+        files = self.data['upload[]']
+        data = volume.upload_chunked_req(files, parent, chunk)
+        self.response.update(data)

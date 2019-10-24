@@ -356,9 +356,8 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
             dir_list.append(item['name'])
         return dir_list
 
-    def paste(self, targets, source, dest, cut):
+    def paste(self, targets, dest, cut):
         """ Moves/copies target files/directories from source to dest. """
-        # source_dir = self._get_path_object(source)
         dest_dir = self._get_path_object(self._find_path(dest))
         added = []
         removed = []

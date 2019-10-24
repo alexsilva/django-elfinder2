@@ -158,9 +158,8 @@ class ModelVolumeDriver(BaseVolumeDriver):
             list.append(object['name'])
         return list
 
-    def paste(self, targets, source, dest, cut):
+    def paste(self, targets, dest, cut):
         """ Moves/copies target files/directories from source to dest. """
-        source_dir = self.get_object(source)
         dest_dir = self.get_object(dest)
         added = []
         removed = []

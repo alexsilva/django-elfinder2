@@ -55,8 +55,9 @@ class ElFinderConnector(object):
                 'mkfile': ('__mkfile', {'target': True, 'name': True}),
                 'rename': ('__rename', {'target': True, 'name': True}),
                 'ls': ('__list', {'target': True}),
-                'paste': ('__paste', {'targets[]': True, 'src': True,
-                                      'dst': True, 'cut': True}),
+                'paste': ('__paste', {'targets[]': True,
+                                      'dst': True, 'cut': True,
+                                      'suffix': True}),
                 'rm': ('__remove', {'targets[]': True}),
                 'upload': ('__upload', {'target': True}),
                 'extract': ('__extract', {'target': True}),
@@ -80,7 +81,7 @@ class ElFinderConnector(object):
         return ['cmd', 'target', 'targets[]', 'current', 'tree',
                 'name', 'content', 'src', 'dst', 'cut', 'init',
                 'type', 'width', 'height', 'upload[]', 'dirs[]',
-                'q', 'download']
+                'q', 'download', 'suffix']
 
     def get_volume(self, hash):
         """ Returns the volume which contains the file/dir represented by the
@@ -326,14 +327,15 @@ class ElFinderConnector(object):
 
     def __paste(self):
         targets = self.data['targets[]']
-        source = self.data['src']
+        if not targets:  # avoid index error
+            return
         dest = self.data['dst']
         cut = (self.data['cut'] == '1')
-        source_volume = self.get_volume(source)
+        source_volume = self.get_volume(targets[0])
         dest_volume = self.get_volume(dest)
         if source_volume != dest_volume:
             raise Exception('Moving between volumes is not supported.')
-        self.response.update(dest_volume.paste(targets, source, dest, cut))
+        self.response.update(dest_volume.paste(targets, dest, cut))
 
     def __archive(self):
         target = self.data['target']

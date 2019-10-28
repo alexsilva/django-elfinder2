@@ -166,3 +166,14 @@ class BaseVolumeDriver(object):
             new files.
             :returns: TODO
         """
+
+    def upload_chunked(self, files, target, cid, chunk, bytes_range):
+        """
+        Chunking arguments:
+        chunk : chunk name "filename.[NUMBER]_[TOTAL].part"
+        cid : unique id of chunked uploading file
+        range : Bytes range of file "Start byte,Chunk length,Total bytes
+        """
+
+    def upload_chunked_req(self, files, parent, chunk):
+        """Chunk merge request (When receive _chunkmerged, _name)"""

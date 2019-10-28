@@ -121,6 +121,11 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
+    def duplicate(self, targets):
+        """Creates a copy of the directory / file. Copy name is generated as follows:
+        basedir_name_filecopy+serialnumber.extension (if any)
+        """
+
     def list(self, target):
         """ Lists the contents of a directory.
 

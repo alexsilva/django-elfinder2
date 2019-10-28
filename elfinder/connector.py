@@ -66,6 +66,7 @@ class ElFinderConnector(object):
                            ('__upload_chunked_req', {'target': True, 'overwrite': False,
                                                      'chunk': True, 'cid': False,
                                                      'upload[]': True})],
+                'duplicate': ('__duplicate', {'targets[]': True}),
                 'extract': ('__extract', {'target': True}),
                 'archive': ('__archive', {'target': True, 'targets[]': True,
                                           'name': True, 'type': True}),
@@ -420,3 +421,9 @@ class ElFinderConnector(object):
         files = self.data['upload[]']
         data = volume.upload_chunked_req(files, parent, chunk)
         self.response.update(data)
+
+    def __duplicate(self):
+        """Duplicate files and dirs"""
+        targets = self.data['targets[]']
+        volume = self.get_volume(targets[0])
+        volume.duplicate(targets)

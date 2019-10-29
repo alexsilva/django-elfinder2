@@ -426,4 +426,4 @@ class ElFinderConnector(object):
         """Duplicate files and dirs"""
         targets = self.data['targets[]']
         volume = self.get_volume(targets[0])
-        volume.duplicate(targets)
+        self.response.update(volume.duplicate(targets))

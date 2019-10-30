@@ -1,6 +1,7 @@
 from xadmin.sites import site
 from elfinder.adminx.mptt_adminx import MPTTModelAdmin
 from elfinder.models import File, Directory, FileCollection
+from elfinder.conf import settings
 
 
 class mMPTTModelAdmin(MPTTModelAdmin):
@@ -13,6 +14,7 @@ class mMPTTModelAdmin(MPTTModelAdmin):
     )
 
 
-site.register(Directory, mMPTTModelAdmin)
-site.register(FileCollection)
-site.register(File)
+if settings.ELFINDER_XADMIN_REGISTER:
+    site.register(Directory, mMPTTModelAdmin)
+    site.register(FileCollection)
+    site.register(File)

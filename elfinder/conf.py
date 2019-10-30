@@ -35,6 +35,11 @@ class LazySettings(LazyObject):
             "django"
         )
 
+        self.ELFINDER_XADMIN_REGISTER = getattr(
+            user_settings, "ELFINDER_XADMIN_REGISTER",
+            True
+        )
+
         self.ELFINDER_FS_DRIVER_URL = getattr(
             user_settings, "ELFINDER_FS_DRIVER_URL",
             user_settings.MEDIA_URL

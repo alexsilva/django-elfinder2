@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.module_loading import import_string
 from django.utils.six import string_types
@@ -14,6 +15,19 @@ class BaseVolumeDriver(object):
             for client hashes.
         """
         raise NotImplementedError
+
+    def _get_connector_url(self):
+        """:return url of driver connector"""
+        view_name = self.kwargs.get('connector_url_view_name',
+                                    'elfinder_connector')
+        collection_id = self.kwargs.get('collection_id')
+        if collection_id:
+            url = reverse(view_name, kwargs={'coll_id': collection_id})
+        else:
+            url = reverse(view_name)
+        return url
+
+    connector_url = cached_property(_get_connector_url)
 
     @cached_property
     def login_required(self):

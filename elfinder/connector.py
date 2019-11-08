@@ -391,11 +391,19 @@ class ElFinderConnector(object):
     def __remove(self):
         targets = self.data['targets[]']
         self.response['removed'] = []
+        warnings = []
         # Because the targets might not all belong to the same volume, we need
         # to lookup the volume and call the remove() function for every target.
         for target in targets:
             volume = self.get_volume(target)
-            self.response['removed'].append(volume.remove(target))
+            warning = volume.remove(target)
+            if warning:
+                warnings.extend(warning)
+                continue
+            self.response['removed'].append(target)
+        # Errors caused when removing files in directories.
+        if warnings:
+            self.response['warning'] = warnings
 
     def __upload(self):
         parent = self.data['target']

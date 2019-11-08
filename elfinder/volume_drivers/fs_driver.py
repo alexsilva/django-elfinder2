@@ -383,7 +383,6 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
     def remove(self, target):
         obj = self._get_path_object(self._find_path(target))
         obj.remove()
-        return target
 
     def upload(self, files, parent):
         added = []

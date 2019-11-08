@@ -201,7 +201,6 @@ class ModelVolumeDriver(BaseVolumeDriver):
         """ Delete a File or Directory object. """
         object = self.get_object(target)
         object.delete()
-        return target
 
     def upload(self, files, parent):
         """ For now, this uses a very naive way of storing files - the entire

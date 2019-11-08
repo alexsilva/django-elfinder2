@@ -172,7 +172,7 @@ class BaseVolumeDriver(object):
             for each target, so should only delete one file/directory.
 
             :param targets: A list of hashes of files/dirs to delete.
-            :returns: string -- the hash of the file/dir that was deleted.
+            :returns: list -- warnings generated when trying to remove a file or directory.
         """
         raise NotImplementedError
 

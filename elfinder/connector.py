@@ -91,7 +91,7 @@ class ElFinderConnector(object):
                 'name', 'content', 'src', 'dst', 'cut', 'init',
                 'type', 'width', 'height', 'upload[]', 'dirs[]',
                 'q', 'download', 'suffix', 'overwrite', 'renames[]',
-                'chunk', 'cid', 'range']
+                'chunk', 'cid', 'range', 'mimes']
 
     def get_volume(self, hash):
         """ Returns the volume which contains the file/dir represented by the
@@ -439,7 +439,7 @@ class ElFinderConnector(object):
     def __upload_chunked_chunkfail(self):
         cid = self.data['cid']
         mimes = self.data['mimes']
-        self.__upload_chunked_req(cid=cid, mimes=mimes)
+        return self.__upload_chunked_req(cid=cid, mimes=mimes)
 
     def __duplicate(self):
         """Duplicate files and dirs"""

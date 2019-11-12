@@ -61,6 +61,8 @@ class ElFinderConnector(object):
                                               'renames[]': True})],
                 'rm': ('__remove', {'targets[]': True}),
                 'upload': [('__upload', {'target': True, 'overwrite': False, 'renames[]': False, 'chunk': False}),
+                           ('__upload_backup', {'target': True, 'suffix': True, 'renames[]': True,
+                                                'overwrite': False, 'chunk': False}),
                            ('__upload_chunked', {'target': True, 'overwrite': False, 'chunk': True, 'cid': True,
                                                  'range': True}),
                            ('__upload_chunked_req', {'target': True, 'overwrite': False, 'chunk': True, 'cid': False,
@@ -411,10 +413,15 @@ class ElFinderConnector(object):
         if warnings:
             self.response['warning'] = warnings
 
-    def __upload(self):
+    def __upload(self, **kwargs):
         parent = self.data['target']
         volume = self.get_volume(parent)
-        self.response.update(volume.upload(self.request.FILES, parent))
+        self.response.update(volume.upload(self.request.FILES, parent, **kwargs))
+
+    def __upload_backup(self):
+        renames = self.data['renames[]']
+        suffix = self.data['suffix']
+        return self.__upload(renames=renames, suffix=suffix)
 
     def __upload_chunked(self):
         parent = self.data['target']

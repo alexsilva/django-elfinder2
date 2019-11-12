@@ -65,7 +65,7 @@ class ElFinderConnector(object):
                                                 'overwrite': False, 'chunk': False}),
                            ('__upload_rename', {'target': True, 'suffix': False, 'renames[]': False,
                                                 'overwrite': True, 'chunk': False}),
-                           ('__upload_chunked', {'target': True, 'overwrite': True, 'chunk': True, 'cid': True,
+                           ('__upload_chunked', {'target': True, 'overwrite': False, 'chunk': True, 'cid': True,
                                                  'range': True}),
                            ('__upload_chunked_req', {'target': True, 'overwrite': False, 'chunk': True, 'cid': False,
                                                      'upload[]': True}),

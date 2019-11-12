@@ -64,7 +64,10 @@ class ElFinderConnector(object):
                            ('__upload_chunked', {'target': True, 'overwrite': False, 'chunk': True, 'cid': True,
                                                  'range': True}),
                            ('__upload_chunked_req', {'target': True, 'overwrite': False, 'chunk': True, 'cid': False,
-                                                     'upload[]': True})],
+                                                     'upload[]': True}),
+                           ('__upload_chunked_chunkfail', {
+                               'target': True, 'chunk': True,  'cid': True, 'upload[]': True, 'mimes': True
+                           })],
                 'duplicate': ('__duplicate', {'targets[]': True}),
                 'extract': ('__extract', {'target': True}),
                 'archive': ('__archive', {'target': True, 'targets[]': True,
@@ -425,13 +428,18 @@ class ElFinderConnector(object):
         data = volume.upload_chunked(self.request.FILES, parent, cid, chunk, bytes_range)
         self.response.update(data)
 
-    def __upload_chunked_req(self):
+    def __upload_chunked_req(self, **kwargs):
         parent = self.data['target']
         volume = self.get_volume(parent)
         chunk = self.data['chunk']
         files = self.data['upload[]']
-        data = volume.upload_chunked_req(files, parent, chunk)
+        data = volume.upload_chunked_req(files, parent, chunk, **kwargs)
         self.response.update(data)
+
+    def __upload_chunked_chunkfail(self):
+        cid = self.data['cid']
+        mimes = self.data['mimes']
+        self.__upload_chunked_req(cid=cid, mimes=mimes)
 
     def __duplicate(self):
         """Duplicate files and dirs"""

@@ -55,9 +55,10 @@ class ElFinderConnector(object):
                 'mkfile': ('__mkfile', {'target': True, 'name': True}),
                 'rename': ('__rename', {'target': True, 'name': True}),
                 'ls': ('__list', {'target': True}),
-                'paste': ('__paste', {'targets[]': True,
-                                      'dst': True, 'cut': True,
-                                      'suffix': True}),
+                'paste': [('__paste', {'targets[]': True, 'dst': True, 'cut': True, 'suffix': True,
+                                       'renames[]': False}),
+                          ('__paste_backup', {'targets[]': True, 'dst': True, 'cut': True, 'suffix': True,
+                                              'renames[]': True})],
                 'rm': ('__remove', {'targets[]': True}),
                 'upload': [('__upload', {'target': True, 'overwrite': False,
                                          'renames[]': False, 'chunk': False}),
@@ -331,17 +332,21 @@ class ElFinderConnector(object):
         volume = self.get_volume(target)
         self.response['list'] = volume.list(target)
 
-    def __paste(self):
+    def __paste(self, **kwargs):
         targets = self.data['targets[]']
         if not targets:  # avoid index error
             return
+        kwargs.setdefault('suffix', self.data['suffix'])
         dest = self.data['dst']
         cut = (self.data['cut'] == '1')
         source_volume = self.get_volume(targets[0])
         dest_volume = self.get_volume(dest)
         if source_volume != dest_volume:
             raise Exception('Moving between volumes is not supported.')
-        self.response.update(dest_volume.paste(targets, dest, cut))
+        self.response.update(dest_volume.paste(targets, dest, cut, **kwargs))
+
+    def __paste_backup(self):
+        return self.__paste(renames=self.data['renames[]'])
 
     def __archive(self):
         target = self.data['target']

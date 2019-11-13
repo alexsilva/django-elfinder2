@@ -70,7 +70,7 @@ class ElFinderConnector(object):
                 {'method': '__upload_chunked_req',
                  'options': ['target', 'upload[]', 'chunk'],
                  'defaults': {'suffix': '~', 'renames[]': [],
-                              'mimes': None, 'cid': None}},
+                              'mimes': None, 'cid': None, 'overwrite': False}},
             ],
             'duplicate': {'method': '__duplicate', 'options': ['targets[]']},
             'extract': {'method': '__extract', 'options': ['target']},

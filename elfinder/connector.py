@@ -8,10 +8,10 @@ do not own. This needs to be implemented in an extendable way, rather
 than being tied to one method of permissions checking.
 """
 
-import collections
 import logging
 import os
 
+import collections
 import patoolib
 
 logger = logging.getLogger(__name__)
@@ -45,40 +45,38 @@ class ElFinderConnector(object):
             given arguments, so the command functions can assume the correct
             values are set. Used by check_command_functions.
         """
-        return {'open': ('__open', {'target': True}),
-                'tree': ('__tree', {'target': True}),
-                'file': ('__file', {'target': True}),
-                'parents': ('__parents', {'target': True}),
-                # is multiple options
-                'mkdir': [('__mkdir', {'target': True, 'name': True}),
-                          ('__mkdirs', {'target': True, 'dirs': True})],
-                'mkfile': ('__mkfile', {'target': True, 'name': True}),
-                'rename': ('__rename', {'target': True, 'name': True}),
-                'ls': ('__list', {'target': True}),
-                'paste': [('__paste', {'targets[]': True, 'dst': True, 'cut': True, 'suffix': True,
-                                       'renames[]': False}),
-                          ('__paste_backup', {'targets[]': True, 'dst': True, 'cut': True, 'suffix': True,
-                                              'renames[]': True})],
-                'rm': ('__remove', {'targets[]': True}),
-                'upload': [('__upload', {'target': True, 'overwrite': False, 'renames[]': False, 'chunk': False}),
-                           ('__upload_backup', {'target': True, 'suffix': True, 'renames[]': True,
-                                                'overwrite': False, 'chunk': False}),
-                           ('__upload_rename', {'target': True, 'suffix': False, 'renames[]': False,
-                                                'overwrite': True, 'chunk': False}),
-                           ('__upload_chunked', {'target': True, 'overwrite': False, 'chunk': True, 'cid': True,
-                                                 'range': True}),
-                           ('__upload_chunked_req', {'target': True, 'overwrite': False, 'chunk': True, 'cid': False,
-                                                     'upload[]': True}),
-                           ('__upload_chunked_chunkfail', {
-                               'target': True, 'chunk': True,  'cid': True, 'upload[]': True, 'mimes': True
-                           })],
-                'duplicate': ('__duplicate', {'targets[]': True}),
-                'extract': ('__extract', {'target': True}),
-                'archive': ('__archive', {'target': True, 'targets[]': True,
-                                          'name': True, 'type': True}),
-                'search': ('__search', {'target': True, 'q': True}),
-                'zipdl': ('__zip_download', {'targets[]': True})
-               }
+        return {
+            'open': {'method': '__open', 'options': ['target']},
+            'tree': {'method': '__tree', 'options': ['target']},
+            'file': {'method': '__file', 'options': ['target']},
+            'parents': {'method': '__parents', 'options': ['target']},
+            'mkdir': {'method': '__mkdir', 'options': ['target', 'name'],
+                      'defaults': {'dirs': []}},
+            'mkfile': {'method': '__mkfile', 'options': ['target', 'name']},
+            'rename': {'method': '__rename', 'options': ['target', 'name']},
+            'ls': {'method': '__list', 'options': ['target']},
+            'paste': {'method': '__paste',
+                      'options': ['targets[]', 'dst', 'cut', 'suffix'],
+                      'defaults': {'renames[]': []}},
+            'rm': {'method': '__remove', 'options': ['targets[]']},
+            'upload': [
+                {'method': '__upload',
+                 'options': ['target'],
+                 'defaults': {'overwrite': False, 'suffix': '~', 'renames[]': []},
+                 'exclude': ['chunk', 'range', 'cid', 'upload[]']},
+                {'method': '__upload_chunked', 'options': ['target', 'range', 'chunk', 'cid']},
+                {'method': '__upload_chunked_req',
+                 'options': ['target', 'upload[]', 'chunk'],
+                 'defaults': {'suffix': '~', 'renames[]': [],
+                              'mimes': None, 'cid': None}},
+            ],
+            'duplicate': {'method': '__duplicate', 'options': ['targets[]']},
+            'extract': {'method': '__extract', 'options': ['target']},
+            'archive': {'method': '__archive',
+                        'options': ['target', 'targets[]', 'name', 'type']},
+            'search': {'method': '__search', 'options': ['target', 'q']},
+            'zipdl': {'method': '__zip_download', 'options': ['targets[]']}
+        }
 
     def get_init_params(self):
         """ Returns a dict which is used in response to a client init request.
@@ -108,21 +106,22 @@ class ElFinderConnector(object):
 
         return self.volumes[volume_id]
 
-    def check_command_variables(self, command_variables):
+    def check_command_variables(self, options, exclude):
         """ Checks the GET variables to ensure they are valid for this command.
             _commands controls which commands must or must not be set.
 
             This means command functions do not need to check for the presence
             of GET vars manually - they can assume that required items exist.
         """
-        for field in command_variables:
-            if command_variables[field] is True and field not in self.data:
+        for field in options:
+            if field not in self.data:
                 return False
-            elif command_variables[field] is False and field in self.data:
+        for field in exclude:
+            if field in self.data:
                 return False
         return True
 
-    def run_command(self, func_name, command_variables):
+    def run_command(self, func_name, **defaults):
         """ Attempts to run the given command.
 
             If the command does not execute, or there are any problems
@@ -132,20 +131,28 @@ class ElFinderConnector(object):
             command_variables: a list of 'name':True/False tuples specifying
             which GET variables must be present or empty for this command.
         """
-        if not self.check_command_variables(command_variables):
-            self.response['error'] = 'Invalid arguments'
-            return
-
         func = getattr(self, '_' + self.__class__.__name__ + func_name, None)
         if not isinstance(func, collections.Callable):
             self.response['error'] = 'Command failed'
             return
 
         try:
-            func()
+            return func(**defaults)
         except Exception as e:
             self.response['error'] = '%s' % e
             logger.exception(e)
+
+    @staticmethod
+    def _convert_bool(v):
+        return bool(int(v))
+
+    def _get_defaults(self, **defaults):
+        for field in defaults:
+            if field in self.data:
+                method_name = '_convert_{0.__name__}'.format(type(defaults[field]))
+                method = getattr(self, method_name, lambda value: value)
+                defaults[field] = method(self.data[field])
+        return defaults
 
     def run(self, request):
         """ Main entry point for running commands. Attemps to run a command
@@ -177,16 +184,20 @@ class ElFinderConnector(object):
         commands = self.get_commands()
         if 'cmd' in self.data:
             if self.data['cmd'] in commands:
-                cmd_options = commands[self.data['cmd']]
-                if isinstance(cmd_options, list):
-                    for func_name, command_variables in cmd_options:
-                        if self.check_command_variables(command_variables):
-                            self.run_command(func_name, command_variables)
+                cmd = commands[self.data['cmd']]
+                if isinstance(cmd, list):
+                    for command in cmd:
+                        if self.check_command_variables(command['options'], command.get('exclude', ())):
+                            defaults = self._get_defaults(**command.get('defaults', {}))
+                            self.run_command(command['method'], **defaults)
                             break
                     else:
                         self.response['error'] = 'Invalid arguments'
+                elif self.check_command_variables(cmd['options'], cmd.get('exclude', ())):
+                    defaults = self._get_defaults(**cmd.get('defaults', {}))
+                    self.run_command(cmd['method'], **defaults)
                 else:
-                    self.run_command(cmd_options[0], cmd_options[1])
+                    self.response['error'] = 'Invalid arguments'
             else:
                 self.response['error'] = 'Unknown command'
         else:
@@ -251,7 +262,7 @@ class ElFinderConnector(object):
         volume = self.get_volume(target)
 
         # A file was requested, so set return_view to the read_file view.
-        #self.return_view = self.read_file_view(self.request, volume, target)
+        # self.return_view = self.read_file_view(self.request, volume, target)
         self.return_view = volume.read_file_view(self.request, target)
         self.is_return_view = True
 
@@ -309,17 +320,16 @@ class ElFinderConnector(object):
         if 'init' in self.data:
             self.response.update(self.get_init_params())
 
-    def __mkdir(self):
+    def __mkdir(self, **kwargs):
         target = self.data['target']
         volume = self.get_volume(target)
-        self.response['added'] = [volume.mkdir(self.data['name'], target)]
-
-    def __mkdirs(self):
-        target = self.data['target']
-        volume = self.get_volume(target)
+        dirs = kwargs['dirs']
         added = []
-        for dirname in self.data['dirs']:
-            added.append(volume.mkdir(dirname, target))
+        if dirs:
+            for dirname in self.data['dirs']:
+                added.append(volume.mkdir(dirname, target))
+        else:
+            added.append(volume.mkdir(self.data['name'], target))
         self.response['added'] = added
 
     def __mkfile(self):
@@ -339,9 +349,6 @@ class ElFinderConnector(object):
 
     def __paste(self, **kwargs):
         targets = self.data['targets[]']
-        if not targets:  # avoid index error
-            return
-        kwargs.setdefault('suffix', self.data['suffix'])
         dest = self.data['dst']
         cut = (self.data['cut'] == '1')
         source_volume = self.get_volume(targets[0])
@@ -349,9 +356,6 @@ class ElFinderConnector(object):
         if source_volume != dest_volume:
             raise Exception('Moving between volumes is not supported.')
         self.response.update(dest_volume.paste(targets, dest, cut, **kwargs))
-
-    def __paste_backup(self):
-        return self.__paste(renames=self.data['renames[]'])
 
     def __archive(self):
         target = self.data['target']
@@ -416,21 +420,11 @@ class ElFinderConnector(object):
             self.response['warning'] = warnings
 
     def __upload(self, **kwargs):
-        kwargs.setdefault('overwrite', True)
         parent = self.data['target']
         volume = self.get_volume(parent)
         self.response.update(volume.upload(self.request.FILES, parent, **kwargs))
 
-    def __upload_backup(self):
-        renames = self.data['renames[]']
-        suffix = self.data['suffix']
-        return self.__upload(renames=renames, suffix=suffix)
-
-    def __upload_rename(self):
-        overwrite = bool(int(self.data['overwrite']))
-        return self.__upload(overwrite=overwrite)
-
-    def __upload_chunked(self):
+    def __upload_chunked(self, **kwargs):
         parent = self.data['target']
 
         cid = self.data['cid']
@@ -438,8 +432,10 @@ class ElFinderConnector(object):
         bytes_range = self.data['range']
 
         volume = self.get_volume(parent)
-
-        data = volume.upload_chunked(self.request.FILES, parent, cid, chunk, bytes_range)
+        data = volume.upload_chunked(self.request.FILES,
+                                     parent, cid, chunk,
+                                     bytes_range,
+                                     **kwargs)
         self.response.update(data)
 
     def __upload_chunked_req(self, **kwargs):
@@ -449,11 +445,6 @@ class ElFinderConnector(object):
         files = self.data['upload[]']
         data = volume.upload_chunked_req(files, parent, chunk, **kwargs)
         self.response.update(data)
-
-    def __upload_chunked_chunkfail(self):
-        cid = self.data['cid']
-        mimes = self.data['mimes']
-        return self.__upload_chunked_req(cid=cid, mimes=mimes)
 
     def __duplicate(self):
         """Duplicate files and dirs"""

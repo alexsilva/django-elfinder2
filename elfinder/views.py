@@ -91,8 +91,13 @@ def connector_view(request, coll_id=None):
         return volume_driver.login_view
 
     finder = ElFinderConnector([volume_driver.volume])
-    finder.run(request)
-
+    try:
+        finder.run(request)
+    except:
+        if settings.DEBUG:
+            import traceback
+            traceback.print_exc()
+        raise
     # Some commands (e.g. read file) will return a Django View - if it
     # is set, return it directly instead of building a response
     if finder.return_view:

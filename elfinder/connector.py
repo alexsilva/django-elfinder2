@@ -50,8 +50,10 @@ class ElFinderConnector(object):
             'tree': {'method': '__tree', 'options': ['target']},
             'file': {'method': '__file', 'options': ['target']},
             'parents': {'method': '__parents', 'options': ['target']},
-            'mkdir': {'method': '__mkdir', 'options': ['target', 'name'],
-                      'defaults': {'dirs': []}},
+            'mkdir': [
+                {'method': '__mkdir', 'options': ['target', 'name']},
+                {'method': '__mkdirs', 'options': ['target', 'dirs']},
+            ],
             'mkfile': {'method': '__mkfile', 'options': ['target', 'name']},
             'rename': {'method': '__rename', 'options': ['target', 'name']},
             'ls': {'method': '__list', 'options': ['target']},
@@ -320,16 +322,17 @@ class ElFinderConnector(object):
         if 'init' in self.data:
             self.response.update(self.get_init_params())
 
-    def __mkdir(self, **kwargs):
+    def __mkdir(self):
         target = self.data['target']
         volume = self.get_volume(target)
-        dirs = kwargs['dirs']
+        self.response['added'] = [volume.mkdir(self.data['name'], target)]
+
+    def __mkdirs(self):
+        target = self.data['target']
+        volume = self.get_volume(target)
         added = []
-        if dirs:
-            for dirname in self.data['dirs']:
-                added.append(volume.mkdir(dirname, target))
-        else:
-            added.append(volume.mkdir(self.data['name'], target))
+        for dirname in self.data['dirs']:
+            added.append(volume.mkdir(dirname, target))
         self.response['added'] = added
 
     def __mkfile(self):

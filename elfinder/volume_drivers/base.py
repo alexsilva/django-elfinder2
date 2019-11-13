@@ -165,6 +165,16 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
+    def size(self, targets):
+        """ Returns the size of a directory or file.
+
+            size: The total size for all the supplied targets.
+            fileCnt: The total counts of the file for all the supplied targets. (Optional to API >= 2.1025)
+            dirCnt: The total counts of the directory for all the supplied targets. (Optional to API >= 2.1025)
+            sizes: An object of each target size infomation. (Optional to API >= 2.1030)
+        """
+        raise NotImplementedError
+
     def remove(self, target):
         """ Deletes the target files/directories.
 

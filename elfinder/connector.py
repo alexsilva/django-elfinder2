@@ -61,6 +61,7 @@ class ElFinderConnector(object):
                       'options': ['targets[]', 'dst', 'cut', 'suffix'],
                       'defaults': {'renames[]': []}},
             'rm': {'method': '__remove', 'options': ['targets[]']},
+            'size': {'method': '__size', 'options': ['targets[]']},
             'upload': [
                 {'method': '__upload',
                  'options': ['target'],
@@ -421,6 +422,11 @@ class ElFinderConnector(object):
         # Errors caused when removing files in directories.
         if warnings:
             self.response['warning'] = warnings
+
+    def __size(self):
+        targets = self.data['targets[]']
+        volume = self.get_volume(targets[0])
+        self.request.update(volume.size(targets))
 
     def __upload(self, **kwargs):
         parent = self.data['target']

@@ -426,7 +426,7 @@ class ElFinderConnector(object):
     def __size(self):
         targets = self.data['targets[]']
         volume = self.get_volume(targets[0])
-        self.request.update(volume.size(targets))
+        self.response.update(volume.size(targets))
 
     def __upload(self, **kwargs):
         parent = self.data['target']

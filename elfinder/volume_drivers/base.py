@@ -57,6 +57,10 @@ class BaseVolumeDriver(object):
         options.update(self.kwargs.get('js_api_options', {}))
         return options
 
+    def get_index_template(self, template):
+        """Template that render the index view."""
+        return self.kwargs.get('index_template', template)
+
     def get_info(self, target):
         """ Returns a dict containing information about the target directory
             or file. This data is used in response to 'open' commands to

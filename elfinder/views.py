@@ -74,7 +74,9 @@ def index(request, coll_id=None):
         'coll_id': coll_id,
         'volume_driver': volume_driver
     }
-    return render(request, "elfinder/index.html",
+    return render(request,
+                  # Possibility to configure a custom template
+                  volume_driver.volume.get_index_template("elfinder/index.html"),
                   context=context,
                   using=settings.ELFINDER_TEMPLATE_ENGINE)
 

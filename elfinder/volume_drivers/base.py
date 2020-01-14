@@ -102,6 +102,16 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
+    def get(self, target, conv):
+        """ Returns the content as String (As UTF-8)
+        :param target : hash of the file
+        :param conv : instructions for character encoding conversion of the text file
+            1 : auto detect encoding(Return false as content in response data when failed)
+            0 : auto detect encoding(Return { "doconv" : "unknown" } as response data when failed)
+            Original Character encoding : original character encoding as specified by the user
+        """
+        raise NotImplementedError
+
     def search(self, text, target):
         """ Search for file/directory
 

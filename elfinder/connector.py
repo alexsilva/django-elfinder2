@@ -78,7 +78,9 @@ class ElFinderConnector(object):
             'archive': {'method': '__archive',
                         'options': ['target', 'targets[]', 'name', 'type']},
             'search': {'method': '__search', 'options': ['target', 'q']},
-            'zipdl': {'method': '__zip_download', 'options': ['targets[]']}
+            'zipdl': {'method': '__zip_download', 'options': ['targets[]']},
+            'get': {'method': '__get', 'options': ['target', 'conv'],
+                    'defaults': {'conv': True}},
         }
 
     def get_init_params(self):
@@ -96,7 +98,7 @@ class ElFinderConnector(object):
                 'name', 'content', 'src', 'dst', 'cut', 'init',
                 'type', 'width', 'height', 'upload[]', 'dirs[]',
                 'q', 'download', 'suffix', 'overwrite', 'renames[]',
-                'chunk', 'cid', 'range', 'mimes']
+                'chunk', 'cid', 'range', 'mimes', 'conv']
 
     def get_volume(self, hash):
         """ Returns the volume which contains the file/dir represented by the
@@ -220,6 +222,14 @@ class ElFinderConnector(object):
         else:
             self.is_return_view = True
             self.return_view = result
+
+    def __get(self, **kwargs):
+        """Get file content"""
+        target = self.data['target']
+
+        volume = self.get_volume(target)
+
+        self.response.update(volume.get(target, **kwargs))
 
     def __search(self):
         """Do search"""

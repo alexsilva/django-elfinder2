@@ -5,6 +5,8 @@ from django.utils.six import string_types
 
 
 class BaseVolumeDriver(object):
+    content_encoding = 'UTF-8'
+
     def __init__(self, request=None, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs

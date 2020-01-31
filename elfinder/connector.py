@@ -46,10 +46,19 @@ class ElFinderConnector(object):
             values are set. Used by check_command_functions.
         """
         return {
-            'open': {'method': '__open', 'options': ['target']},
-            'tree': {'method': '__tree', 'options': ['target']},
+            'open': {
+                'method': '__open', 'options': ['target'],
+                'defaults': {'mimes[]': []}
+            },
+            'tree': {
+                'method': '__tree', 'options': ['target'],
+                'defaults': {'mimes[]': []}
+            },
             'file': {'method': '__file', 'options': ['target']},
-            'parents': {'method': '__parents', 'options': ['target']},
+            'parents': {
+                'method': '__parents', 'options': ['target'],
+                'defaults': {'mimes[]': []}
+            },
             'mkdir': [
                 {'method': '__mkdir', 'options': ['target', 'name']},
                 {'method': '__mkdirs', 'options': ['target', 'dirs']},
@@ -70,8 +79,11 @@ class ElFinderConnector(object):
                 {'method': '__upload_chunked', 'options': ['target', 'range', 'chunk', 'cid']},
                 {'method': '__upload_chunked_req',
                  'options': ['target', 'upload[]', 'chunk'],
-                 'defaults': {'suffix': '~', 'renames[]': [],
-                              'mimes': None, 'cid': None, 'overwrite': True}},
+                 'defaults': {
+                    'suffix': '~', 'renames[]': [],
+                    'mimes[]': [], 'cid': None,
+                    'overwrite': True}
+                 },
             ],
             'duplicate': {'method': '__duplicate', 'options': ['targets[]']},
             'extract': {'method': '__extract', 'options': ['target']},
@@ -98,7 +110,7 @@ class ElFinderConnector(object):
                 'name', 'content', 'src', 'dst', 'cut', 'init',
                 'type', 'width', 'height', 'upload[]', 'dirs[]',
                 'q', 'download', 'suffix', 'overwrite', 'renames[]',
-                'chunk', 'cid', 'range', 'mimes', 'conv']
+                'chunk', 'cid', 'range', 'mimes[]', 'conv']
 
     def get_volume(self, hash):
         """ Returns the volume which contains the file/dir represented by the
@@ -179,7 +191,7 @@ class ElFinderConnector(object):
         # Copy allowed parameters from the given request's GET to self.data
         for field in self.get_allowed_http_params():
             if field in data_source:
-                if field in ["targets[]", "dirs[]", "renames[]", "upload[]"]:
+                if field in ["targets[]", "dirs[]", "renames[]", "upload[]", "mimes[]"]:
                     self.data[field] = data_source.getlist(field)
                 else:
                     self.data[field] = data_source[field]
@@ -238,7 +250,7 @@ class ElFinderConnector(object):
         volume = self.get_volume(target)
         self.response['files'] = volume.search(query, target)
 
-    def __parents(self):
+    def __parents(self, **kwargs):
         """ Handles the parent command.
 
             Sets response['tree'], which contains a list of dicts representing
@@ -252,9 +264,9 @@ class ElFinderConnector(object):
         volume = self.get_volume(target)
         self.response['tree'] = volume.get_tree(target,
                                                 ancestors=True,
-                                                siblings=True)
+                                                siblings=True, **kwargs)
 
-    def __tree(self):
+    def __tree(self, **kwargs):
         """ Handles the 'tree' command.
 
             Sets response['tree'] - a list of children of the specified
@@ -262,7 +274,7 @@ class ElFinderConnector(object):
         """
         target = self.data['target']
         volume = self.get_volume(target)
-        self.response['tree'] = volume.get_tree(target)
+        self.response['tree'] = volume.get_tree(target, **kwargs)
 
     def __file(self):
         """ Handles the 'file' command.
@@ -279,7 +291,7 @@ class ElFinderConnector(object):
         self.return_view = volume.read_file_view(self.request, target)
         self.is_return_view = True
 
-    def __open(self):
+    def __open(self, **kwargs):
         """ Handles the 'open' command.
 
             Sets response['files'] and response['cwd'].
@@ -317,7 +329,7 @@ class ElFinderConnector(object):
                 volume = self.volumes[volume_id]
                 self.response['files'] = volume.get_tree('',
                                                          inc_ancestors,
-                                                         inc_siblings)
+                                                         inc_siblings, **kwargs)
         else:
             # A target was specified, so we only need to return info about
             # that directory.
@@ -326,7 +338,7 @@ class ElFinderConnector(object):
             self.response['cwd'] = volume.get_info(target)
             self.response['files'] = volume.get_tree(target,
                                                      inc_ancestors,
-                                                     inc_siblings)
+                                                     inc_siblings, **kwargs)
 
         # If the request includes 'init', add some client initialisation
         # data to the response.

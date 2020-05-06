@@ -202,7 +202,7 @@ class ModelVolumeDriver(BaseVolumeDriver):
         object = self.get_object(target)
         object.delete()
 
-    def upload(self, files, parent_hash):
+    def upload(self, files, parent_hash, **kwargs):
         """ For now, this uses a very naive way of storing files - the entire
             file is read in to the File model's content field in one go.
 

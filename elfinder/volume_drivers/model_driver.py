@@ -135,13 +135,13 @@ class ModelVolumeDriver(BaseVolumeDriver):
                                   {'file': file},
                                   RequestContext(request))
 
-    def mkdir(self, name, parent):
+    def mkdir(self, name, parent_hash):
         """ Creates a new directory. """
-        return self._create_object(name, parent, self.directory_model)
+        return self._create_object(name, parent_hash, self.directory_model)
 
-    def mkfile(self, name, parent):
+    def mkfile(self, name, parent_hash):
         """ Creates a new file. """
-        return self._create_object(name, parent, self.file_model)
+        return self._create_object(name, parent_hash, self.file_model)
 
     def rename(self, name, target):
         """ Renames a file or directory. """
@@ -153,10 +153,10 @@ class ModelVolumeDriver(BaseVolumeDriver):
 
     def list(self, target):
         """ Returns a list of files/directories in the target directory. """
-        list = []
+        items = []
         for object in self.get_tree(target):
-            list.append(object['name'])
-        return list
+            items.append(object['name'])
+        return items
 
     def paste(self, targets, dest, cut):
         """ Moves/copies target files/directories from source to dest. """
@@ -202,7 +202,7 @@ class ModelVolumeDriver(BaseVolumeDriver):
         object = self.get_object(target)
         object.delete()
 
-    def upload(self, files, parent):
+    def upload(self, files, parent_hash):
         """ For now, this uses a very naive way of storing files - the entire
             file is read in to the File model's content field in one go.
 
@@ -210,7 +210,7 @@ class ModelVolumeDriver(BaseVolumeDriver):
             chunk at a time.
         """
         added = []
-        parent = self.get_object(parent)
+        parent = self.get_object(parent_hash)
         for upload in files.getlist('upload[]'):
             new_file = self.file_model(name=upload.name,
                                        parent=parent,

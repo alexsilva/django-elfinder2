@@ -1,15 +1,15 @@
 # coding: utf-8
-import hashlib
 import mimetypes as mimes
+
+import chardet
+import hashlib
 import os
 import re
 import shutil
 from datetime import datetime
-
-import chardet
 from django.conf import settings
 from django.core.files import File
-from django.utils.encoding import force_str, smart_text
+from django.utils.encoding import smart_text, smart_str, force_bytes
 from django.utils.six import binary_type
 
 from elfinder.conf import settings as elfinder_settings
@@ -66,10 +66,10 @@ class WrapperBase(object):
         return value
 
     def _real_hash(self, path):
-        enc_path = force_str(str(path),
-                             errors="xmlcharrefreplace")
+        enc_path = force_bytes(str(path),
+                               errors="xmlcharrefreplace")
         m = hashlib.md5(enc_path)
-        return str(m.hexdigest())
+        return smart_str(m.hexdigest())
 
     def get_options(self):
         return {"options": {}}

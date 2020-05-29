@@ -290,7 +290,7 @@ class FileSystemVolumeDriver(BaseVolumeDriver):
                     result.append(info)
         return result
 
-    def get_tree(self, target, ancestors=False, siblings=False):
+    def get_tree(self, target, ancestors=False, siblings=False, **kwargs):
         path = self._find_path(target)
 
         tree = [self._get_path_info(path)]

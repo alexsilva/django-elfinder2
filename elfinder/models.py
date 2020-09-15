@@ -27,7 +27,7 @@ class Directory(MPTTModel, FileCollectionChildMixin):
     parent = TreeForeignKey('self', on_delete=models.SET_NULL,
                             null=True, blank=True,
                             related_name='dirs')
-    collection = models.ForeignKey('FileCollection')
+    collection = models.ForeignKey('FileCollection', on_delete=models.CASCADE)
 
     class Meta:
         verbose_name_plural = 'directories'
@@ -85,10 +85,10 @@ class File(models.Model, FileCollectionChildMixin):
     """ A File in a FileCollection.
     """
     name = models.CharField(max_length=255)
-    parent = TreeForeignKey(Directory, null=True, blank=True,
-                            related_name='files')
+    parent = TreeForeignKey(Directory, on_delete=models.CASCADE,
+                            null=True, blank=True, related_name='files')
     content = models.TextField(max_length=2048, blank=True)
-    collection = models.ForeignKey('FileCollection')
+    collection = models.ForeignKey('FileCollection', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('name', 'parent')

@@ -114,11 +114,12 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
-    def search(self, text, target):
+    def search(self, text, target, reqid):
         """ Search for file/directory
 
             :param query: search string.
             :param hash: The hash of the parent directory.
+            :param reqid: request session id.
             :returns: mimes
         """
         raise NotImplementedError

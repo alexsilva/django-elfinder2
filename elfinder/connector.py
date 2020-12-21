@@ -8,11 +8,12 @@ do not own. This needs to be implemented in an extendable way, rather
 than being tied to one method of permissions checking.
 """
 
+import collections
 import logging
 import os
 
-import collections
 import patoolib
+from django.utils.functional import cached_property
 
 logger = logging.getLogger(__name__)
 
@@ -80,19 +81,20 @@ class ElFinderConnector(object):
                 {'method': '__upload_chunked_req',
                  'options': ['target', 'upload[]', 'chunk'],
                  'defaults': {
-                    'suffix': '~', 'renames[]': [],
-                    'mimes[]': [], 'cid': None,
-                    'overwrite': True}
+                     'suffix': '~', 'renames[]': [],
+                     'mimes[]': [], 'cid': None,
+                     'overwrite': True}
                  },
             ],
             'duplicate': {'method': '__duplicate', 'options': ['targets[]']},
             'extract': {'method': '__extract', 'options': ['target']},
             'archive': {'method': '__archive',
                         'options': ['target', 'targets[]', 'name', 'type']},
-            'search': {'method': '__search', 'options': ['target', 'q']},
+            'search': {'method': '__search', 'options': ['target', 'q', 'reqid']},
             'zipdl': {'method': '__zip_download', 'options': ['targets[]']},
             'get': {'method': '__get', 'options': ['target', 'conv'],
                     'defaults': {'conv': True}},
+            'abort': {'method': '__abort', 'options': ['id', 'reqid']},
         }
 
     def get_init_params(self):
@@ -103,14 +105,28 @@ class ElFinderConnector(object):
         """
         return {'api': self._version}
 
+    def get_allowed_lcommand_http_params(self):
+        return ["targets[]", "dirs[]",
+                "renames[]", "upload[]",
+                "mimes[]"]
+
+    @cached_property
+    def allowed_list_command_http_params(self):
+        return self.get_allowed_lcommand_http_params()
+
     def get_allowed_http_params(self):
         """ Returns a list of parameters allowed during GET/POST requests.
         """
-        return ['cmd', 'target', 'targets[]', 'current', 'tree',
-                'name', 'content', 'src', 'dst', 'cut', 'init',
-                'type', 'width', 'height', 'upload[]', 'dirs[]',
-                'q', 'download', 'suffix', 'overwrite', 'renames[]',
-                'chunk', 'cid', 'range', 'mimes[]', 'conv']
+        http_params = ['cmd', 'reqid', 'id', 'target',
+                       'current', 'tree', 'name', 'content', 'src',
+                       'dst', 'cut', 'init', 'type', 'width', 'height',
+                       'q', 'download', 'suffix', 'overwrite', 'chunk',
+                       'cid', 'range', 'conv']
+        return http_params + self.allowed_list_command_http_params
+
+    @cached_property
+    def allowed_http_params(self):
+        return self.get_allowed_http_params()
 
     def get_volume(self, hash):
         """ Returns the volume which contains the file/dir represented by the
@@ -186,15 +202,15 @@ class ElFinderConnector(object):
         self.request = request
 
         # Is this a POST or a GET?
-        data_source = getattr(request, request.method)
+        options = request.GET if request.method == "GET" else request.POST
 
         # Copy allowed parameters from the given request's GET to self.data
-        for field in self.get_allowed_http_params():
-            if field in data_source:
-                if field in ["targets[]", "dirs[]", "renames[]", "upload[]", "mimes[]"]:
-                    self.data[field] = data_source.getlist(field)
+        for field in self.allowed_http_params:
+            if field in options:
+                if field in self.allowed_list_command_http_params:
+                    self.data[field] = options.getlist(field)
                 else:
-                    self.data[field] = data_source[field]
+                    self.data[field] = options[field]
 
         # If a valid command has been specified, try and run it. Otherwise set
         # the relevant error message.
@@ -247,8 +263,9 @@ class ElFinderConnector(object):
         """Do search"""
         target = self.data['target']
         query = self.data['q']
+        reqid = self.data['reqid']
         volume = self.get_volume(target)
-        self.response['files'] = volume.search(query, target)
+        self.response['files'] = volume.search(query, target, reqid)
 
     def __parents(self, **kwargs):
         """ Handles the parent command.
@@ -482,3 +499,11 @@ class ElFinderConnector(object):
         targets = self.data['targets[]']
         volume = self.get_volume(targets[0])
         self.response.update(volume.duplicate(targets))
+
+    def __abort(self):
+        """Abort previous command"""
+        self.is_return_view = True
+        for volume in self.volumes:
+            self.return_view = self.volumes[volume].abort(self.data['id'])
+            if self.return_view:
+                break

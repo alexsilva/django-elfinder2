@@ -11,7 +11,8 @@ class Settings(object):
 class LazySettings(LazyObject):
     def _setup(self):
         self._wrapped = Settings()
-
+        self.ELFINDER_DEBUG = getattr(user_settings, 'ELFINDER_DEBUG',
+                                      user_settings.DEBUG)
         self.ELFINDER_VOLUME_DRIVERS = getattr(
             user_settings, "ELFINDER_VOLUME_DRIVERS", {
                 "default": {

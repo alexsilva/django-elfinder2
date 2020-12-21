@@ -96,7 +96,7 @@ def connector_view(request, coll_id=None):
     try:
         finder.run(request)
     except:
-        if settings.DEBUG:
+        if settings.ELFINDER_DEBUG:
             import traceback
             traceback.print_exc()
         raise

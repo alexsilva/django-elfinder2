@@ -223,3 +223,6 @@ class BaseVolumeDriver(object):
 
     def upload_chunked_req(self, files, parent, chunk):
         """Chunk merge request (When receive _chunkmerged, _name)"""
+
+    def abort(self, reqid):
+        """Aborts an operation in progress."""

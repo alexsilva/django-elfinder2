@@ -95,7 +95,7 @@ class ElFinderConnector(object):
             'search': {'method': '__search', 'options': ['target', 'q', 'reqid']},
             'zipdl': {'method': '__zip_download', 'options': ['targets[]']},
             'get': {'method': '__get', 'options': ['target', 'conv'],
-                    'defaults': {'conv': True}},
+                    'defaults': {'conv': None}},
             'abort': {'method': '__abort', 'options': ['id', 'reqid']},
         }
 

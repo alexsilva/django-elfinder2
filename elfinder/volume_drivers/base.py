@@ -166,7 +166,7 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
-    def paste(self, targets, dest, cut):
+    def paste(self, targets, dest, cut, **kwargs):
         """ Moves/copies target files/directories from source to dest.
 
             If a file with the same name already exists in the dest directory

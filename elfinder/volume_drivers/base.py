@@ -142,6 +142,16 @@ class BaseVolumeDriver(object):
         """
         raise NotImplementedError
 
+    def putfile(self, target, content, **kwargs):
+        """ Update the contents of an existing file..
+
+            :param target: The hash of the file being changed.
+            :param content: The contents of the file.
+            :param kwargs: optional encoding
+            :returns: list -- of files that were successfully uploaded.
+        """
+        raise NotImplementedError
+
     def rename(self, name, target):
         """ Renames a file or directory.
 

@@ -65,6 +65,8 @@ class ElFinderConnector(object):
                 {'method': '__mkdirs', 'options': ['target', 'dirs']},
             ],
             'mkfile': {'method': '__mkfile', 'options': ['target', 'name']},
+            'put': {'method': '__putfile', 'options': ['target', 'content'],
+                    'defaults': {'encoding': None}},
             'rename': {'method': '__rename', 'options': ['target', 'name']},
             'ls': {'method': '__list', 'options': ['target']},
             'paste': {'method': '__paste',
@@ -118,7 +120,7 @@ class ElFinderConnector(object):
         """ Returns a list of parameters allowed during GET/POST requests.
         """
         http_params = ['cmd', 'reqid', 'id', 'target',
-                       'current', 'tree', 'name', 'content', 'src',
+                       'current', 'tree', 'name', 'content', 'encoding', 'src',
                        'dst', 'cut', 'init', 'type', 'width', 'height',
                        'q', 'download', 'suffix', 'overwrite', 'chunk',
                        'cid', 'range', 'conv']
@@ -379,6 +381,13 @@ class ElFinderConnector(object):
         target = self.data['target']
         volume = self.get_volume(target)
         self.response['added'] = [volume.mkfile(self.data['name'], target)]
+
+    def __putfile(self, **kwargs):
+        """updating an existing file."""
+        target = self.data['target']
+        content = self.data['content']
+        volume = self.get_volume(target)
+        self.response['changed'] = [volume.putfile(target, content, **kwargs)]
 
     def __rename(self):
         target = self.data['target']

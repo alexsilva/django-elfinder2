@@ -36,7 +36,7 @@ class egg_info_with_submodules(egg_info):
 setup(
     cmdclass={"build": build_with_submodules, "egg_info": egg_info_with_submodules},
     name='django-elfinder',
-    version='2.5.0',
+    version='2.5.1',
     description='Django connector for elFinder 2 - with support for FS storage and TinyMCE connector',
     long_description=README,
     author='Martin Bohacek',

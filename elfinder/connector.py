@@ -135,7 +135,7 @@ class ElFinderConnector(object):
             hash.
         """
         try:
-            volume_id, target = hash.split('_')
+            volume_id, target = hash.split('_')[:2]
         except ValueError:
             raise Exception('Invalid target hash: %s' % hash)
 
